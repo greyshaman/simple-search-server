@@ -1,7 +1,7 @@
 #include <QCoreApplication>
 
 int main(int argc, char *argv[]) {
-  QCoreApplication a(argc, argv);
+  // QCoreApplication a(argc, argv);
 
   // Set up code that uses the Qt event loop here.
   // Call a.quit() or a.exit() to quit the application.
@@ -14,5 +14,5 @@ int main(int argc, char *argv[]) {
   // If you do not need a running Qt event loop, remove the call
   // to a.exec() or use the Non-Qt Plain C++ Application template.
 
-  return a.exec();
+  // return a.exec();
 }
