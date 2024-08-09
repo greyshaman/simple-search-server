@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(search-server LANGUAGES CXX)
+project(search-server VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -12,14 +12,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
+add_library(SearchServerLib SHARED converterjson.h converterjson.cpp
+  config.json
+  resources/file001.txt
+  resources/file002.txt
+  resources/file003.txt
+  config.h )
+
 add_executable(search-server
   main.cpp
-  converterjson.h converterjson.cpp
 )
-target_link_libraries(search-server Qt${QT_VERSION_MAJOR}::Core)
+
+add_subdirectory(nlohmann_json)
+add_subdirectory(test)
+target_link_libraries(
+  search-server
+  Qt${QT_VERSION_MAJOR}::Core
+  SearchServerLib
+  nlohmann_json::nlohmann_json
+)
 
 include(GNUInstallDirs)
 install(TARGETS search-server
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
