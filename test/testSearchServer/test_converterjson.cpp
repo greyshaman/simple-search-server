@@ -37,14 +37,13 @@ TestConverterJSON::~TestConverterJSON() {}
 
 void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON converterJSON("abscent_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON("abscent_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     ConfigFileMissingException
   );
 }
 
 void TestConverterJSON::testParsingConfigSectionInConfigurationFile() {
-  // TODO Добавить своих исключеий чтобы можно было отличать различные причины ошибок
-// TODO implement testcase
+  // TODO Implement testcase
 }
 
 QTEST_APPLESS_MAIN(TestConverterJSON)
