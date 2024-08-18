@@ -4,8 +4,9 @@ set(INCLUDE_DIR include)
 
 add_library(SearchServerLib SHARED
   ${INCLUDE_DIR}/converterjson.h converterjson.cpp
-  ${INCLUDE_DIR}/config.h
+  ${INCLUDE_DIR}/converter-config.h
   ${INCLUDE_DIR}/config-file-missing-exception.h config-file-missing-exception.cpp
+  ${INCLUDE_DIR}/config-file-is-empty-exception.h config-file-is-empty-exception.cpp
 )
 
 add_executable(search-server

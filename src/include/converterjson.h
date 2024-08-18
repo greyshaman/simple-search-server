@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "config.h"
+#include "converter-config.h"
 
 /**
  * @brief ConverterJSON - класс для работы с JSON-файлами
@@ -13,7 +13,7 @@ class ConverterJSON {
   std::string requestsFilename;
   std::string answersFilename;
 
-  Config config;
+  ConverterConfig converterConfig;
 
   void readConfig();
   void loadConfig();

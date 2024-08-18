@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-struct Config {
+struct ConverterConfig {
   std::string name;
   std::string version;
   int maxResponses = 5;
