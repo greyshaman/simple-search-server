@@ -1,13 +1,14 @@
 #include <fstream>
 #include <filesystem>
-#include <stdexcept>
 #include <iostream>
+
 #include "converterjson.h"
+#include "config-file-missing-exception.h"
 
 void ConverterJSON::readConfig() {
 	if (!std::filesystem::is_regular_file(configFilename)) {
 	  std::cerr << "config file missing" << std::endl;
-	  throw std::runtime_error("config file missing");
+	  throw ConfigFileMissingException(configFilename);
   }
   std::ifstream file(configFilename);
   if (file.is_open()) {

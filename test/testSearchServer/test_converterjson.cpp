@@ -1,7 +1,9 @@
 #include <QtTest/QTest>
 #include <string>
+#include <fstream>
 
 #include "converterjson.h"
+#include "config-file-missing-exception.h"
 
 const std::string TEST_CONFIG_FILENAME = "test_config.json";
 const std::string TEST_REQUESTS_FILENAME = "test_requests.json";
@@ -15,10 +17,10 @@ public:
   ~TestConverterJSON();
 
 private slots:
-  // TODO remove this test case after other test cases will work
-  void test1();
-  // TODO протестировать появление исключения если нет конфигурационного файла
+  // Тестировать появление исключения если нет конфигурационного файла
   void testShouldThrowExceptionWhenConfigMissed();
+  // Тестировать отсутствие секции config в конфигурационном файле
+  void testParsingConfigSectionInConfigurationFile();
   // TODO testing loading files content as strings list
   // void testGetTextDocuments();
   // TODO testing get responses limit from config
@@ -33,16 +35,16 @@ TestConverterJSON::TestConverterJSON() {}
 
 TestConverterJSON::~TestConverterJSON() {}
 
-void TestConverterJSON::test1() {
-  const int value = 1;
-  QVERIFY2(value == 1, "Ожидается наличие целого числа 1");
-}
-
 void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON converterJSON(TEST_CONFIG_FILENAME, TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    std::runtime_error
+    ConverterJSON converterJSON("abscent_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConfigFileMissingException
   );
+}
+
+void TestConverterJSON::testParsingConfigSectionInConfigurationFile() {
+  // TODO Добавить своих исключеий чтобы можно было отличать различные причины ошибок
+// TODO implement testcase
 }
 
 QTEST_APPLESS_MAIN(TestConverterJSON)
