@@ -3,6 +3,7 @@
 #include <exception>
 #include <string>
 
+
 class ConfigFileMissingException : public std::exception {
 public:
   ConfigFileMissingException(const std::string&);

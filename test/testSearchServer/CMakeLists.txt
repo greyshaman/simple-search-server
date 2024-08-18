@@ -22,7 +22,11 @@ add_executable(TestSearchServer
   test_converterjson.cpp
 )
 target_link_libraries(TestSearchServer PRIVATE SearchServerLib)
-add_test(NAME TestSearchServer COMMAND TestSearchServer)
+add_test(
+  NAME TestSearchServer
+  COMMAND TestSearchServer
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 target_link_libraries(TestSearchServer PRIVATE Qt${QT_VERSION_MAJOR}::Test)
 

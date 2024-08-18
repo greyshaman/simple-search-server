@@ -1,9 +1,9 @@
 #include <QtTest/QTest>
 #include <string>
-#include <fstream>
 
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
+#include "config-file-is-empty-exception.h"
 
 const std::string TEST_CONFIG_FILENAME = "test_config.json";
 const std::string TEST_REQUESTS_FILENAME = "test_requests.json";
@@ -43,7 +43,11 @@ void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
 }
 
 void TestConverterJSON::testParsingConfigSectionInConfigurationFile() {
-  // TODO Implement testcase
+  QVERIFY_EXCEPTION_THROWN(
+    // ConverterJSON("../../../../test/testSearchServer/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON("test/testSearchServer/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConfigFileIsEmptyException
+  );
 }
 
 QTEST_APPLESS_MAIN(TestConverterJSON)
