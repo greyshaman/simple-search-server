@@ -1,0 +1,9 @@
+{
+  "config": {
+    "name": "SearchServerEngine",
+    "version": "0.1"
+  },
+  "files": [
+    "../resources/file001.txt"
+  ]
+}

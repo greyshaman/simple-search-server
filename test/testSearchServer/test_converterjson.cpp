@@ -1,9 +1,13 @@
 #include <QtTest/QTest>
 #include <string>
 
+#include "config-test.h"
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
 #include "config-file-is-empty-exception.h"
+#include "incorrect-version-exception.h"
+#include "no-max-responses-exception.h"
+#include "files-section-missing-exception.h"
 
 const std::string TEST_CONFIG_FILENAME = "test_config.json";
 const std::string TEST_REQUESTS_FILENAME = "test_requests.json";
@@ -17,14 +21,13 @@ public:
   ~TestConverterJSON();
 
 private slots:
-  // Тестировать появление исключения если нет конфигурационного файла
   void testShouldThrowExceptionWhenConfigMissed();
-  // Тестировать отсутствие секции config в конфигурационном файле
-  void testParsingConfigSectionInConfigurationFile();
+  void testIsEmtyConfig();
+  void testIncorrectVersion();
+  void testFileSection();
   // TODO testing loading files content as strings list
   // void testGetTextDocuments();
-  // TODO testing get responses limit from config
-  // void testResponsesLimit();
+  void testResponsesLimit();
   // TODO testing get requests from json file
   // void testGetRequests();
   // TODO testing put answer
@@ -42,11 +45,31 @@ void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
   );
 }
 
-void TestConverterJSON::testParsingConfigSectionInConfigurationFile() {
+void TestConverterJSON::testIsEmtyConfig() {
   QVERIFY_EXCEPTION_THROWN(
-    // ConverterJSON("../../../../test/testSearchServer/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    ConverterJSON("test/testSearchServer/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON(TESTS_WORK_DIR"/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     ConfigFileIsEmptyException
+  );
+}
+
+void TestConverterJSON::testIncorrectVersion() {
+  QVERIFY_EXCEPTION_THROWN(
+    ConverterJSON(TESTS_WORK_DIR"/incorrect_version_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    IncorrectVersionException
+  );
+}
+
+void TestConverterJSON::testFileSection() {
+  QVERIFY_EXCEPTION_THROWN(
+    ConverterJSON(TESTS_WORK_DIR"/wo_files_section_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    FilesSectionMissingException
+  );
+}
+
+void TestConverterJSON::testResponsesLimit() {
+  QVERIFY_EXCEPTION_THROWN(
+    ConverterJSON(TESTS_WORK_DIR"/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    NoMaxResponsesException
   );
 }
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <nlohmann/json.hpp>
 
 #include "converter-config.h"
 
@@ -15,8 +16,11 @@ class ConverterJSON {
 
   ConverterConfig converterConfig;
 
-  void readConfig();
-  void loadConfig();
+  void readConfigFile();
+  void loadConfig(const nlohmann::json);
+  std::string checkRequiredParameter(const std::string, const std::string);
+  int checkRequiredParameter(const std::string, const int);
+  std::vector<std::vector<std::string>> validateDataFiles();
 
 public:
   ConverterJSON();
@@ -26,7 +30,7 @@ public:
   /**
    * @brief GetTextDocuments - метод получения содержимого
    * файлов
-   * @return std::vector<std::string> Возвращает список с содержиыи файлов
+   * @return std::vector<std::string> Возвращает список с содержимым файлов
    *        перечисленных в config.json
    */
   std::vector<std::string> GetTextDocuments();

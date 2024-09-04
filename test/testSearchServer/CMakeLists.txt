@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 project(TestSearchServer LANGUAGES CXX)
 
@@ -16,16 +16,22 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(../../src/include)
+configure_file(config-test.h.in config-test.h @ONLY)
+
+include_directories(../../src/include ../../src/exceptions/include)
 
 add_executable(TestSearchServer
   test_converterjson.cpp
+  config-test.h.in
+  wo_required_config.json
+  incorrect_version_config.json
+  good_config.json
+  wo_files_section_config.json
 )
 target_link_libraries(TestSearchServer PRIVATE SearchServerLib)
 add_test(
   NAME TestSearchServer
   COMMAND TestSearchServer
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(TestSearchServer PRIVATE Qt${QT_VERSION_MAJOR}::Test)
