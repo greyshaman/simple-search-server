@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <iostream>
 #include <sstream>
-#include <set>
 
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
@@ -22,10 +21,12 @@ const std::string VERSION = std::string(
 
 const unsigned int MAX_REQUESTS_PER_LINE = 10;
 
-nlohmann::json ConverterJSON::readJsonFile(const std::string& fileName,
+using json = nlohmann::json;
+
+json ConverterJSON::readJsonFile(const std::string& fileName,
                                            const bool isRequired = false)
 {
-  nlohmann::json result;
+  json result;
   if (!std::filesystem::is_regular_file(fileName)) {
     std::cerr << "The file " << fileName << " is missing\n";
 
@@ -37,7 +38,7 @@ nlohmann::json ConverterJSON::readJsonFile(const std::string& fileName,
   std::ifstream file(fileName);
 
   if (file.is_open()) {
-    result = nlohmann::json::parse(file);
+    result = json::parse(file);
   }
 
   return result;
@@ -76,33 +77,7 @@ void ConverterJSON::loadConfig(const nlohmann::json data)
   if (!hasFilesSection) throw FilesSectionMissingException(configFilename);
 }
 
-std::string ConverterJSON::checkRequiredParameter(
-  const std::string paramName,
-  const std::string paramValue
-)
-{
-	if (paramValue.empty()) {
-	  std::stringstream ss;
-	  ss << "The required config param " << paramName << " should have value" << std::endl;
-	  throw std::invalid_argument(ss.str());
-  }
-
-  return paramValue;
-}
-
-int ConverterJSON::checkRequiredParameter(const std::string paramName, const int paramValue)
-{
-	if (paramValue <= 0) {
-	  std::stringstream ss;
-	  ss << "The required config param " << paramName << " should have value more then 0"
-		 << std::endl;
-	  throw std::invalid_argument(ss.str());
-  }
-
-  return paramValue;
-}
-
-std::vector<std::string> ConverterJSON::loadRequests(const nlohmann::json data)
+search_server::Requests ConverterJSON::loadRequests(const nlohmann::json data)
 {
   std::vector<std::string> requests;
   if (data.size() > 0) {
@@ -118,7 +93,7 @@ std::vector<std::string> ConverterJSON::loadRequests(const nlohmann::json data)
 	  }
 	}
   }
-  return requests;
+  return search_server::Requests { requests };
 }
 
 ConverterJSON::ConverterJSON() : ConverterJSON("config.json", "requests.json", "answers.json") {}
@@ -163,5 +138,6 @@ std::vector<std::string> ConverterJSON::GetTextDocuments()
 
 std::vector<std::string> ConverterJSON::GetRequests()
 {
-  return loadRequests(readJsonFile(requestsFilename));
+  requestsStore = loadRequests(readJsonFile(requestsFilename));
+  return requestsStore.requests;
 }

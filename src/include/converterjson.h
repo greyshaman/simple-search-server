@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "converter-config.h"
+#include "requests.h"
 
 /**
  * @brief ConverterJSON - класс для работы с JSON-файлами
@@ -15,18 +16,16 @@ class ConverterJSON {
   std::string requestsFilename;
   std::string answersFilename;
 
-  ConverterConfig converterConfig;
+  search_server::ConverterConfig converterConfig;
 
-  std::vector<std::string> requirests;
+  search_server::Requests requestsStore;
 
   nlohmann::json readJsonFile(const std::string& fileName, const bool isRequired);
   std::filesystem::path getParentPath(const std::string& fileName) const;
 
   void loadConfig(const nlohmann::json);
-  std::string checkRequiredParameter(const std::string, const std::string);
-  int checkRequiredParameter(const std::string, const int);
 
-  std::vector<std::string> loadRequests(const nlohmann::json);
+  search_server::Requests loadRequests(const nlohmann::json);
 
 public:
   ConverterJSON();
