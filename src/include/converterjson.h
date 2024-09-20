@@ -20,14 +20,14 @@ class ConverterJSON {
 
   converter_config::ConverterConfig converterConfig;
 
-  search_server::Requests requestsStore;
+  requests_format::RequestsConfig requestsConfig;
 
   nlohmann::json readJsonFile(const std::string& fileName, const bool isRequired);
   std::filesystem::path getParentPath(const std::string& fileName) const;
 
   void loadConfig(const nlohmann::json);
 
-  search_server::Requests loadRequests(const nlohmann::json);
+  requests_format::RequestsConfig loadRequests(const nlohmann::json);
 
 public:
   ConverterJSON();

@@ -1,7 +1,6 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
-#include <sstream>
 
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
@@ -70,23 +69,14 @@ void ConverterJSON::loadConfig(const json jdata)
   }
 }
 
-search_server::Requests ConverterJSON::loadRequests(const nlohmann::json data)
+search_server::requests_format::RequestsConfig ConverterJSON::loadRequests(const nlohmann::json jdata)
 {
-  std::vector<std::string> requests;
-  if (data.size() > 0) {
-    for (auto requestsItr = data.begin(); requestsItr != data.end(); requestsItr++) {
-      const std::string propertyName = requestsItr.key();
-      const auto propertyValue = requestsItr.value();
-
-	  if (propertyName == "requests") {
-		std::vector<std::string> requestsRawLines = propertyValue;
-		for (std::string requestLine : requestsRawLines) {
-		  requests.push_back(requestLine);
-		}
-	  }
-	}
+  using namespace search_server::requests_format;
+  RequestsConfig requestsConfig;
+  if (jdata.size() > 0 && jdata.contains("requests")) {
+    requestsConfig = jdata.template get<RequestsConfig>();
   }
-  return search_server::Requests { requests };
+  return requestsConfig;
 }
 
 ConverterJSON::ConverterJSON() : ConverterJSON("config.json", "requests.json", "answers.json") {}
@@ -131,6 +121,6 @@ std::vector<std::string> ConverterJSON::GetTextDocuments()
 
 std::vector<std::string> ConverterJSON::GetRequests()
 {
-  requestsStore = loadRequests(readJsonFile(requestsFilename));
-  return requestsStore.requests;
+  requestsConfig = loadRequests(readJsonFile(requestsFilename));
+  return requestsConfig.requests;
 }
