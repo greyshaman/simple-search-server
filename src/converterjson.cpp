@@ -22,6 +22,7 @@ const std::string VERSION = std::string(
 const unsigned int MAX_REQUESTS_PER_LINE = 10;
 
 using json = nlohmann::json;
+using namespace search_server;
 
 json ConverterJSON::readJsonFile(const std::string& fileName,
                                            const bool isRequired = false)

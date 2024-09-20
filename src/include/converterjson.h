@@ -8,6 +8,8 @@
 #include "converter-config.h"
 #include "requests.h"
 
+namespace search_server{
+
 /**
  * @brief ConverterJSON - класс для работы с JSON-файлами
  */
@@ -59,3 +61,4 @@ public:
    */
   void putAnswers(std::vector<std::vector<std::pair<int, float>>> answer);
 };
+}
