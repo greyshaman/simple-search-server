@@ -13,6 +13,7 @@ add_library(SearchServerLib SHARED
   config.h.in
   ${INCLUDE_DIR}/converterjson.h converterjson.cpp
   ${INCLUDE_DIR}/converter-config.h
+  ${INCLUDE_DIR}/requests.h
   ${EXCEPTIONS_INCLUDE_DIR}/config-parser-exception.h ${EXCEPTIONS_DIR}/config-parser-exception.cpp
   ${EXCEPTIONS_INCLUDE_DIR}/config-file-missing-exception.h ${EXCEPTIONS_DIR}/config-file-missing-exception.cpp
   ${EXCEPTIONS_INCLUDE_DIR}/config-file-is-empty-exception.h ${EXCEPTIONS_DIR}/config-file-is-empty-exception.cpp
