@@ -28,6 +28,7 @@ add_executable(TestSearchServer
   confs/good_config.json
   confs/wo_files_section_config.json
   confs/missed_data_file_config.json
+  confs/no_max_responses_config.json
   resources/file001.txt
   requests/no_requests_section.json
   requests/long_requests_lines.json

@@ -8,7 +8,7 @@
 #include "converter-config.h"
 #include "requests.h"
 
-namespace search_server{
+namespace search_server {
 
 /**
  * @brief ConverterJSON - класс для работы с JSON-файлами
@@ -18,7 +18,7 @@ class ConverterJSON {
   std::string requestsFilename;
   std::string answersFilename;
 
-  search_server::ConverterConfig converterConfig;
+  converter_config::ConverterConfig converterConfig;
 
   search_server::Requests requestsStore;
 

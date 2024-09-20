@@ -50,32 +50,24 @@ std::filesystem::path ConverterJSON::getParentPath(const std::string& fileName) 
   return std::filesystem::path(fileName).parent_path();
 }
 
-void ConverterJSON::loadConfig(const nlohmann::json data)
+void ConverterJSON::loadConfig(const json jdata)
 {
-  bool hasConfigSection = false;
-  bool hasFilesSection  = false;
-
-  if (data.size() == 0) { throw ConfigFileIsEmptyException(configFilename); }
-  for (auto configItr = data.begin(); configItr != data.end(); configItr++) {
-    const std::string propertyName = configItr.key();
-    const auto propertyValue       = configItr.value();
-
-	if (!hasConfigSection && propertyName == "config") hasConfigSection = true;
-	if (!hasFilesSection && propertyName == "files") hasFilesSection = true;
-
-	if (propertyName == "config") {
-	  if (propertyValue.count("max_responses") == 0) throw NoMaxResponsesException(configFilename);
-	  converterConfig.name         = propertyValue["name"];
-	  converterConfig.version      = propertyValue["version"];
-	  converterConfig.maxResponses = propertyValue["max_responses"];
-
-	  if (converterConfig.version != VERSION) throw IncorrectVersionException(configFilename);
-	} else if (propertyName == "files") {
-	  converterConfig.files = propertyValue;
-    }
+  if (jdata.size() == 0 || !jdata.contains("config")) {
+    throw ConfigFileIsEmptyException(configFilename);
   }
-  if (!hasConfigSection) throw ConfigFileIsEmptyException(configFilename);
-  if (!hasFilesSection) throw FilesSectionMissingException(configFilename);
+  converterConfig = jdata.template get<search_server::converter_config::ConverterConfig>();
+
+  if (converterConfig.version != VERSION) {
+    throw IncorrectVersionException(configFilename);
+  }
+
+  if (converterConfig.maxResponses < 0) {
+    throw NoMaxResponsesException(configFilename);
+  }
+
+  if (converterConfig.files.empty()) {
+    throw FilesSectionMissingException(configFilename);
+  }
 }
 
 search_server::Requests ConverterJSON::loadRequests(const nlohmann::json data)

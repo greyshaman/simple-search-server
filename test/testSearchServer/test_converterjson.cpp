@@ -30,6 +30,7 @@ private slots:
   void testIsEmtyConfig();
   void testIncorrectVersion();
   void testFileSection();
+  void testNoMaxResponsesSection();
   void testGetTextDocuments();
   void testResponsesLimit();
 
@@ -71,6 +72,13 @@ void TestConverterJSON::testFileSection() {
     ConverterJSON(TESTS_SOURCE_DIR"/confs/wo_files_section_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     FilesSectionMissingException
   );
+}
+
+void TestConverterJSON::testNoMaxResponsesSection() {
+  QVERIFY_EXCEPTION_THROWN(
+      ConverterJSON(TESTS_SOURCE_DIR"/confs/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+      NoMaxResponsesException
+      );
 }
 
 void TestConverterJSON::testGetTextDocuments() {
