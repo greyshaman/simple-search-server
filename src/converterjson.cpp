@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
@@ -19,20 +20,36 @@ const std::string VERSION = std::string(
   #endif
 );
 
-void ConverterJSON::readConfigFile() {
-	if (!std::filesystem::is_regular_file(configFilename)) {
-	  std::cerr << "config file missing" << std::endl;
-	  throw ConfigFileMissingException(configFilename);
+const unsigned int MAX_REQUESTS_PER_LINE = 10;
+
+nlohmann::json ConverterJSON::readJsonFile(const std::string& fileName,
+                                           const bool isRequired = false)
+{
+  nlohmann::json result;
+  if (!std::filesystem::is_regular_file(fileName)) {
+    std::cerr << "The file " << fileName << " is missing\n";
+
+	if (isRequired) {
+	  throw ConfigFileMissingException(fileName);
+	}
   }
-  std::ifstream file(configFilename);
+
+  std::ifstream file(fileName);
+
   if (file.is_open()) {
-    loadConfig(nlohmann::json::parse(file));
-  } else {
-    throw std::runtime_error("Cannot open config file");
+    result = nlohmann::json::parse(file);
   }
+
+  return result;
 }
 
-void ConverterJSON::loadConfig(const nlohmann::json data) {
+std::filesystem::path ConverterJSON::getParentPath(const std::string& fileName) const
+{
+  return std::filesystem::path(fileName).parent_path();
+}
+
+void ConverterJSON::loadConfig(const nlohmann::json data)
+{
   bool hasConfigSection = false;
   bool hasFilesSection  = false;
 
@@ -40,8 +57,9 @@ void ConverterJSON::loadConfig(const nlohmann::json data) {
   for (auto configItr = data.begin(); configItr != data.end(); configItr++) {
     const std::string propertyName = configItr.key();
     const auto propertyValue       = configItr.value();
-    hasConfigSection               = (!hasConfigSection && propertyName == "config");
-    hasFilesSection                = (!hasFilesSection && propertyName == "files");
+
+	if (!hasConfigSection && propertyName == "config") hasConfigSection = true;
+	if (!hasFilesSection && propertyName == "files") hasFilesSection = true;
 
 	if (propertyName == "config") {
 	  if (propertyValue.count("max_responses") == 0) throw NoMaxResponsesException(configFilename);
@@ -61,7 +79,8 @@ void ConverterJSON::loadConfig(const nlohmann::json data) {
 std::string ConverterJSON::checkRequiredParameter(
   const std::string paramName,
   const std::string paramValue
-) {
+)
+{
 	if (paramValue.empty()) {
 	  std::stringstream ss;
 	  ss << "The required config param " << paramName << " should have value" << std::endl;
@@ -71,7 +90,8 @@ std::string ConverterJSON::checkRequiredParameter(
   return paramValue;
 }
 
-int ConverterJSON::checkRequiredParameter(const std::string paramName, const int paramValue) {
+int ConverterJSON::checkRequiredParameter(const std::string paramName, const int paramValue)
+{
 	if (paramValue <= 0) {
 	  std::stringstream ss;
 	  ss << "The required config param " << paramName << " should have value more then 0"
@@ -80,6 +100,25 @@ int ConverterJSON::checkRequiredParameter(const std::string paramName, const int
   }
 
   return paramValue;
+}
+
+std::vector<std::string> ConverterJSON::loadRequests(const nlohmann::json data)
+{
+  std::vector<std::string> requests;
+  if (data.size() > 0) {
+    for (auto requestsItr = data.begin(); requestsItr != data.end(); requestsItr++) {
+      const std::string propertyName = requestsItr.key();
+      const auto propertyValue = requestsItr.value();
+
+	  if (propertyName == "requests") {
+		std::vector<std::string> requestsRawLines = propertyValue;
+		for (std::string requestLine : requestsRawLines) {
+		  requests.push_back(requestLine);
+		}
+	  }
+	}
+  }
+  return requests;
 }
 
 ConverterJSON::ConverterJSON() : ConverterJSON("config.json", "requests.json", "answers.json") {}
@@ -91,12 +130,38 @@ ConverterJSON::ConverterJSON(
 )
   : configFilename(inConfigFilename)
   , requestsFilename(inRequestsFilename)
-  , answersFilename(inAnswersFilename) {
-  readConfigFile();
+  , answersFilename(inAnswersFilename)
+{
+  loadConfig(readJsonFile(configFilename, true));
 }
 
 ConverterJSON::~ConverterJSON() {}
 
-// std::vector<std::string> ConverterJSON::GetTextDocuments() {
+std::vector<std::string> ConverterJSON::GetTextDocuments()
+{
+  std::vector<std::string> actualFileList;
+  if (converterConfig.files.size() > 0) {
+      for (auto filename : converterConfig.files) {
+        std::filesystem::path filepath(filename);
 
-// }
+		if (filepath.is_relative()) {
+		  const auto configDir = getParentPath(configFilename);
+		  std::filesystem::path absoluteResourcePath(configDir);
+		  absoluteResourcePath.append(filename);
+		  filepath = absoluteResourcePath;
+		}
+
+		if (std::filesystem::is_regular_file(filepath)) {
+		  actualFileList.push_back(filepath);
+		} else {
+		  std::cerr << "File " << filename << " not found\n";
+		}
+	}
+  }
+  return actualFileList;
+}
+
+std::vector<std::string> ConverterJSON::GetRequests()
+{
+  return loadRequests(readJsonFile(requestsFilename));
+}

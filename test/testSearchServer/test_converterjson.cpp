@@ -1,5 +1,8 @@
 #include <QtTest/QTest>
 #include <string>
+#include <iostream>
+#include <sstream>
+#include <exception>
 
 #include "config-test.h"
 #include "converterjson.h"
@@ -25,11 +28,13 @@ private slots:
   void testIsEmtyConfig();
   void testIncorrectVersion();
   void testFileSection();
-  // TODO testing loading files content as strings list
-  // void testGetTextDocuments();
+  void testGetTextDocuments();
   void testResponsesLimit();
-  // TODO testing get requests from json file
-  // void testGetRequests();
+
+  void testGetRequestsWhenMissingFile();
+  void testGetRequestsWithEmptyFile();
+  void testGetRequestsPositive();
+
   // TODO testing put answer
   // void testPutAnswers();
 };
@@ -47,30 +52,111 @@ void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
 
 void TestConverterJSON::testIsEmtyConfig() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_WORK_DIR"/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON(TESTS_SOURCE_DIR"/confs/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     ConfigFileIsEmptyException
   );
 }
 
 void TestConverterJSON::testIncorrectVersion() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_WORK_DIR"/incorrect_version_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON(TESTS_SOURCE_DIR"/confs/incorrect_version_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     IncorrectVersionException
   );
 }
 
 void TestConverterJSON::testFileSection() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_WORK_DIR"/wo_files_section_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON(TESTS_SOURCE_DIR"/confs/wo_files_section_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     FilesSectionMissingException
   );
 }
 
+void TestConverterJSON::testGetTextDocuments() {
+  std::stringstream errorLog;
+  std::streambuf* originalBuffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(errorLog.rdbuf());
+
+  try {
+    ConverterJSON converter(
+      TESTS_SOURCE_DIR"/confs/good_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME
+    );
+    std::vector<std::string> resourceFilenames = converter.GetTextDocuments();
+    std::string errorMessage = errorLog.str();
+    QCOMPARE(errorMessage, "File ../resources/missed_file.txt not found\n");
+    std::cerr.rdbuf(originalBuffer);
+    QCOMPARE(resourceFilenames.size(), 1);
+
+  } catch (const std::exception& ex) {
+    std::cerr.rdbuf(originalBuffer);
+    std::stringstream ss;
+    ss << "Test is interrupted by exception: " << ex.what();
+    QFAIL(ss.str().c_str());
+  }
+}
+
 void TestConverterJSON::testResponsesLimit() {
   QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_WORK_DIR"/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
+    ConverterJSON(TESTS_SOURCE_DIR"/confs/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
     NoMaxResponsesException
   );
+}
+
+void TestConverterJSON::testGetRequestsWhenMissingFile()
+{
+  std::stringstream errorLog;
+  std::streambuf* originalBuffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(errorLog.rdbuf());
+
+  try {
+    ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                            TESTS_SOURCE_DIR "/requests/missing.json",
+                            TEST_REQUESTS_FILENAME);
+    std::vector<std::string> requests = converter.GetRequests();
+
+    std::cerr.rdbuf(originalBuffer);
+
+	QCOMPARE(errorLog.str(), "The file " TESTS_SOURCE_DIR "/requests/missing.json is missing\n");
+	QCOMPARE(requests.size(), 0);
+  } catch (std::exception& ex) {
+    std::cerr.rdbuf(originalBuffer);
+    std::stringstream ss;
+    ss << "Test is interrupted by exception: " << ex.what();
+    QFAIL(ss.str().c_str());
+  }
+}
+
+void TestConverterJSON::testGetRequestsWithEmptyFile()
+{
+  std::stringstream errorLog;
+  std::streambuf* originalBuffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(errorLog.rdbuf());
+
+  try {
+    ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                            TESTS_SOURCE_DIR "/requests/no_requests_section.json",
+                            TEST_REQUESTS_FILENAME);
+    std::vector<std::string> requests = converter.GetRequests();
+
+    std::cerr.rdbuf(originalBuffer);
+
+	QCOMPARE(errorLog.str(), "");
+	QCOMPARE(requests.size(), 0);
+  } catch (const std::exception& ex) {
+    std::cerr.rdbuf(originalBuffer);
+    std::stringstream ss;
+    ss << "Test is interrupted by exception: " << ex.what();
+    QFAIL(ss.str().c_str());
+  }
+}
+
+
+void TestConverterJSON::testGetRequestsPositive() {
+  ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                          TESTS_SOURCE_DIR "/requests/requests.json",
+                          TEST_REQUESTS_FILENAME);
+  std::vector<std::string> requests = converter.GetRequests();
+
+  QCOMPARE(requests.size(), 3);
 }
 
 QTEST_APPLESS_MAIN(TestConverterJSON)

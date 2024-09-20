@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
 #include "converter-config.h"
 
@@ -16,11 +17,16 @@ class ConverterJSON {
 
   ConverterConfig converterConfig;
 
-  void readConfigFile();
+  std::vector<std::string> requirests;
+
+  nlohmann::json readJsonFile(const std::string& fileName, const bool isRequired);
+  std::filesystem::path getParentPath(const std::string& fileName) const;
+
   void loadConfig(const nlohmann::json);
   std::string checkRequiredParameter(const std::string, const std::string);
   int checkRequiredParameter(const std::string, const int);
-  std::vector<std::vector<std::string>> validateDataFiles();
+
+  std::vector<std::string> loadRequests(const nlohmann::json);
 
 public:
   ConverterJSON();

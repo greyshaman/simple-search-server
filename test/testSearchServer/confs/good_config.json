@@ -5,6 +5,7 @@
     "max_responses": 5
   },
   "files": [
+    "../resources/missed_file.txt",
     "../resources/file001.txt"
   ]
 }

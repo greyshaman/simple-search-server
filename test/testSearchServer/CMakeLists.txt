@@ -23,10 +23,15 @@ include_directories(../../src/include ../../src/exceptions/include)
 add_executable(TestSearchServer
   test_converterjson.cpp
   config-test.h.in
-  wo_required_config.json
-  incorrect_version_config.json
-  good_config.json
-  wo_files_section_config.json
+  confs/wo_required_config.json
+  confs/incorrect_version_config.json
+  confs/good_config.json
+  confs/wo_files_section_config.json
+  confs/missed_data_file_config.json
+  resources/file001.txt
+  requests/no_requests_section.json
+  requests/long_requests_lines.json
+  requests/requests.json
 )
 target_link_libraries(TestSearchServer PRIVATE SearchServerLib)
 add_test(
