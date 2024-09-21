@@ -28,6 +28,7 @@ class ConverterJSON {
   void loadConfig(const nlohmann::json);
 
   requests_format::RequestsConfig loadRequests(const nlohmann::json);
+  json prepareAnswersToExport(std::vector<std::vector<std::pair<int, float>>> answer);
 
 public:
   ConverterJSON();
@@ -59,6 +60,6 @@ public:
    * @brief putAnswers - Положить в файл answer.json результаты поисковых запросов
    * @param std::vector<std::vector<std::pair<int, float>>> answer
    */
-  void putAnswers(std::vector<std::vector<std::pair<int, float>>> answer);
+  void PutAnswers(std::vector<std::vector<std::pair<int, float>>> answer);
 };
 }

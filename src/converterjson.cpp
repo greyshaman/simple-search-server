@@ -60,7 +60,7 @@ void ConverterJSON::loadConfig(const json jdata)
     throw IncorrectVersionException(configFilename);
   }
 
-  if (converterConfig.maxResponses < 0) {
+  if (converterConfig.maxResponses < 1) {
     throw NoMaxResponsesException(configFilename);
   }
 
@@ -123,4 +123,52 @@ std::vector<std::string> ConverterJSON::GetRequests()
 {
   requestsConfig = loadRequests(readJsonFile(requestsFilename));
   return requestsConfig.requests;
+}
+
+void ConverterJSON::PutAnswers(std::vector<std::vector<std::pair<int, float>>> answers)
+{
+  json jAnswers = prepareAnswersToExport(answers);
+
+  std::ofstream file(answersFilename, std::ios::out | std::ios::trunc);
+
+  if (file.is_open()) {
+    file << std::setw(4) << jAnswers;
+  }
+}
+
+json ConverterJSON::prepareAnswersToExport(std::vector<std::vector<std::pair<int, float>>> answers)
+{
+  json j;
+
+  int requestsCounter = 0;
+  for (std::vector<std::pair<int, float>> answer : answers) {
+    std::stringstream requestNameStrm;
+    requestNameStrm << "request" << std::setw(3) << std::setfill('0') << ++requestsCounter;
+
+	if (answer.empty()) {
+	  const json resultRec = json::object({{"result", "false"}});
+	  const json jRequstRow = json::object({{requestNameStrm.str(), resultRec}});
+	  j.merge_patch(jRequstRow);
+	} else if (answer.size() == 1) {
+	  const auto answerItr = answer.begin();
+	  const int docId = (*answerItr).first;
+	  const float rank = (*answerItr).second;
+	  const json resultRec = json::object({{"result", "true"}, {"docid", docId}, {"rank", rank}});
+	  const json jRequstRow = json::object({{requestNameStrm.str(), resultRec}});
+	  j.merge_patch(jRequstRow);
+	} else {
+	  json resultRec = json::object({{"result", "true"}});
+	  std::vector<json> relevanceList;
+	  for (auto resultPair : answer) {
+		const auto docId = resultPair.first;
+		const auto rank = resultPair.second;
+		relevanceList.push_back(json::object({{"docid", docId}, {"rank", rank}}));
+	  }
+	  resultRec.merge_patch(json::object({{"relevance", relevanceList}}));
+	  const json jRequstRow = json::object({{requestNameStrm.str(), resultRec}});
+	  j.merge_patch(jRequstRow);
+	}
+  }
+
+  return json::object({{"answers", j}});
 }
