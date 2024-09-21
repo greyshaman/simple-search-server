@@ -12,7 +12,7 @@ void from_json(const json& j, ConverterConfig& config)
     if (configNode.contains("max_responses")) {
       configNode.at("max_responses").get_to(config.maxResponses);
     } else {
-      config.maxResponses = -1;
+      config.maxResponses = 0;
     }
   }
 
