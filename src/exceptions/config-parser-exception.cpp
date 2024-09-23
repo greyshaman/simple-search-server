@@ -1,7 +1,7 @@
 #include "config-parser-exception.h"
 
-ConfigParserException::ConfigParserException(const std::string& inMessage)
-  : message(inMessage) {}
+ConfigParserException::ConfigParserException(const std::string& in_message)
+  : message(in_message) {}
 
 ConfigParserException::~ConfigParserException() {}
 

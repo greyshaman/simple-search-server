@@ -15,7 +15,7 @@ struct ConverterConfig
 {
   std::string name;
   std::string version;
-  int maxResponses = 0;
+  int max_responses = 0;
   std::vector<ResourceFilename> files;
 
   ConverterConfig();

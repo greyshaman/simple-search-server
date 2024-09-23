@@ -14,15 +14,15 @@ namespace search_server {
  * @brief ConverterJSON - класс для работы с JSON-файлами
  */
 class ConverterJSON {
-  std::string configFilename;
-  std::string requestsFilename;
-  std::string answersFilename;
+  std::string config_filename;
+  std::string requests_filename;
+  std::string answers_filename;
 
-  converter_config::ConverterConfig converterConfig;
+  converter_config::ConverterConfig converter_config;
 
-  requests_format::RequestsConfig requestsConfig;
+  requests_format::RequestsConfig requests_config;
 
-  nlohmann::json readJsonFile(const std::string& fileName, const bool isRequired);
+  nlohmann::json readJsonFile(const std::string& file_name, const bool is_required);
   std::filesystem::path getParentPath(const std::string& fileName) const;
 
   void loadConfig(const nlohmann::json);

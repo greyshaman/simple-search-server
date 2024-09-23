@@ -30,13 +30,13 @@ struct Entry
 class InvertedIndex
 {
   std::vector<std::string> docs;
-  std::map<std::string, std::vector<Entry>> freqDictionary;
+  std::map<std::string, std::vector<Entry>> freq_dictionary;
 
   static std::map<std::string, size_t> countWordsFrequencies(const std::string& document);
 
-  static void updateFreqDictionaryForDoc(const size_t docId,
-                                         InvertedIndex* idsPtr,
-                                         std::mutex& accessMutex);
+  static void updateFreqDictionaryForDoc(const size_t doc_id,
+                                         InvertedIndex* ids_ptr,
+                                         std::mutex& access_mutex);
 
 public:
   InvertedIndex();

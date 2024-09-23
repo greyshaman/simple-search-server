@@ -18,51 +18,51 @@ std::map<std::string, size_t> InvertedIndex::countWordsFrequencies(const std::st
   return result;
 }
 
-void InvertedIndex::updateFreqDictionaryForDoc(const size_t docId,
-											   InvertedIndex* idxPtr,
-											   std::mutex& accessMutex)
+void InvertedIndex::updateFreqDictionaryForDoc(const size_t doc_id,
+											   InvertedIndex* idx_ptr,
+											   std::mutex& access_mutex)
 {
-  const std::string doc = idxPtr->docs.at(docId);
-  std::map<std::string, std::vector<Entry>>& dict = idxPtr->freqDictionary;
-  const auto wordsFrequencies = countWordsFrequencies(doc);
-  for (auto itr = wordsFrequencies.begin(); itr != wordsFrequencies.end(); itr++) {
+  const std::string doc = idx_ptr->docs.at(doc_id);
+  std::map<std::string, std::vector<Entry>>& dict = idx_ptr->freq_dictionary;
+  const auto words_frequencies = countWordsFrequencies(doc);
+  for (auto itr = words_frequencies.begin(); itr != words_frequencies.end(); itr++) {
     const auto pair = (*itr);
     const auto word = pair.first;
     const auto count = pair.second;
 
-	std::lock_guard<std::mutex> guard{accessMutex};
+	std::lock_guard<std::mutex> guard{access_mutex};
 	if (dict.count(word) == 0) {
-	  dict[word] = std::vector<Entry>{{Entry(docId, count)}};
+	  dict[word] = std::vector<Entry>{{Entry(doc_id, count)}};
 	} else {
-	  dict[word].push_back(Entry(docId, count));
+	  dict[word].push_back(Entry(doc_id, count));
 	}
   }
 }
 
 InvertedIndex::InvertedIndex()
 	: docs(std::vector<std::string>())
-	, freqDictionary(std::map<std::string, std::vector<Entry>>())
+	, freq_dictionary(std::map<std::string, std::vector<Entry>>())
 {}
 
 void InvertedIndex::UpdateDocumentBase(const std::vector<std::string> input_docs)
 {
   docs.clear();
-  freqDictionary.clear();
+  freq_dictionary.clear();
 
 
   docs.resize(input_docs.size());
   std::copy(input_docs.begin(), input_docs.end(), docs.begin());
 
-  std::mutex accessMutex;
+  std::mutex access_mutex;
   std::vector<std::future<void>> workers;
 
-  for (size_t docId = 0; docId < docs.size(); docId++) {
-    const auto doc = docs[docId];
+  for (size_t doc_id = 0; doc_id < docs.size(); doc_id++) {
+    const auto doc = docs[doc_id];
     workers.emplace_back(std::async(std::launch::async,
                                     updateFreqDictionaryForDoc,
-                                    docId,
+                                    doc_id,
                                     this,
-                                    std::ref(accessMutex)));
+                                    std::ref(access_mutex)));
   }
 
   for (auto& worker : workers) {
@@ -72,9 +72,9 @@ void InvertedIndex::UpdateDocumentBase(const std::vector<std::string> input_docs
 
 std::vector<Entry> InvertedIndex::GetWordCount(const std::string& word)
 {
-  if (freqDictionary.count(word) > 0) {
-    const auto foundItr = freqDictionary.find(word);
-    return (*foundItr).second;
+  if (freq_dictionary.count(word) > 0) {
+    const auto found_itr = freq_dictionary.find(word);
+    return (*found_itr).second;
   } else {
     return std::vector<Entry>();
   }

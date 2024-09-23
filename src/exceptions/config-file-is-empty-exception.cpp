@@ -1,4 +1,4 @@
 #include "config-file-is-empty-exception.h"
 
-ConfigFileIsEmptyException::ConfigFileIsEmptyException(const std::string& inFile)
-  : ConfigParserException("config file " + inFile + " is empty") {}
+ConfigFileIsEmptyException::ConfigFileIsEmptyException(const std::string& in_file)
+  : ConfigParserException("config file " + in_file + " is empty") {}
