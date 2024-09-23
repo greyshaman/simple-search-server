@@ -30,9 +30,14 @@ add_executable(TestSearchServer
   confs/missed_data_file_config.json
   confs/no_max_responses_config.json
   resources/file001.txt
+  resources/file002.txt
   requests/no_requests_section.json
   requests/long_requests_lines.json
   requests/requests.json
+)
+
+add_executable(TestInvertedIndex
+  test_inverted_index.cpp
 )
 target_link_libraries(TestSearchServer PRIVATE SearchServerLib)
 add_test(
@@ -40,5 +45,13 @@ add_test(
   COMMAND TestSearchServer
 )
 
+target_link_libraries(TestInvertedIndex PRIVATE SearchServerLib)
+add_test(
+  NAME TestInvertedIndex
+  COMMAND TestInvertedIndex
+)
+
 target_link_libraries(TestSearchServer PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+
+target_link_libraries(TestInvertedIndex PRIVATE Qt${QT_VERSION_MAJOR}::Test)
 
