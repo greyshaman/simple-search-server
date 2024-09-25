@@ -31,7 +31,6 @@ add_executable(TestConverterJson
   confs/missed_data_file_config.json
   confs/no_max_responses_config.json
   resources/file001.txt
-
   requests/no_requests_section.json
   requests/long_requests_lines.json
   requests/requests.json
