@@ -11,6 +11,7 @@ configure_file(config.h.in config.h @ONLY)
 
 add_library(SearchServerLib SHARED
   config.h.in
+  ${INCLUDE_DIR}/search-server.h search-server.cpp
   ${INCLUDE_DIR}/converterjson.h converterjson.cpp
   ${INCLUDE_DIR}/converter-config.h converter-config.cpp
   ${INCLUDE_DIR}/requests.h
