@@ -22,13 +22,14 @@ class ConverterJSON {
 
   requests_format::RequestsConfig requests_config;
 
-  nlohmann::json readJsonFile(const std::string& file_name, const bool is_required);
-  std::filesystem::path getParentPath(const std::string& fileName) const;
+  nlohmann::json readJsonFile(const std::string& file_name, const bool is_required) const;
+  inline std::filesystem::path getParentPath(const std::string& filename) const;
 
-  void loadConfig(const nlohmann::json);
+  void loadConfig(const nlohmann::json&);
 
-  requests_format::RequestsConfig loadRequests(const nlohmann::json);
+  requests_format::RequestsConfig loadRequests(const nlohmann::json&);
   json prepareAnswersToExport(std::vector<std::vector<std::pair<int, float>>> answer);
+  void truncToNWords(std::string&, const size_t);
 
 public:
   ConverterJSON();

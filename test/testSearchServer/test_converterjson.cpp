@@ -9,16 +9,14 @@
 #include <nlohmann/json.hpp>
 
 #include "config-test.h"
+#include "test_search_server.h"
+
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
 #include "config-file-is-empty-exception.h"
 #include "incorrect-version-exception.h"
 #include "no-max-responses-exception.h"
 #include "files-section-missing-exception.h"
-
-const std::string TEST_CONFIG_FILENAME = "test_config.json";
-const std::string TEST_REQUESTS_FILENAME = "test_requests.json";
-const std::string TEST_ANSWERS_FILENAME = "test_answers.json";
 
 using json = nlohmann::json;
 using namespace search_server;
@@ -37,10 +35,12 @@ private slots:
   void testFileSection();
   void testNoMaxResponsesSection();
   void testGetTextDocuments();
-  void testResponsesLimit();
+  void testGetResponsesLimit();
 
-  void testGetRequestsWhenMissingFile();
+  void testGetRequestsWhenlMissingFile();
   void testGetRequestsWithEmptyFile();
+  void testGetRequestsFor1024k();
+  void testGetRequestsWhenLongRequestLine();
   void testGetRequestsPositive();
 
   void testPutAnswers();
@@ -51,75 +51,78 @@ TestConverterJSON::TestConverterJSON() {}
 TestConverterJSON::~TestConverterJSON() {}
 
 void TestConverterJSON::testShouldThrowExceptionWhenConfigMissed() {
-  QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON("unexisted_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    ConfigFileMissingException
-  );
+  QVERIFY_EXCEPTION_THROWN(ConverterJSON("unexisted_config.json",
+                                         TEST_REQUESTS_FILENAME,
+                                         TEST_ANSWERS_FILENAME),
+                           ConfigFileMissingException);
 }
 
 void TestConverterJSON::testIsEmtyConfig() {
-  QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_SOURCE_DIR"/confs/wo_required_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    ConfigFileIsEmptyException
-  );
+  QVERIFY_EXCEPTION_THROWN(ConverterJSON(TESTS_SOURCE_DIR "/confs/wo_required_config.json",
+                                         TEST_REQUESTS_FILENAME,
+                                         TEST_ANSWERS_FILENAME),
+                           ConfigFileIsEmptyException);
 }
 
 void TestConverterJSON::testIncorrectVersion() {
-  QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_SOURCE_DIR"/confs/incorrect_version_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    IncorrectVersionException
-  );
+  QVERIFY_EXCEPTION_THROWN(ConverterJSON(TESTS_SOURCE_DIR "/confs/incorrect_version_config.json",
+                                         TEST_REQUESTS_FILENAME,
+                                         TEST_ANSWERS_FILENAME),
+                           IncorrectVersionException);
 }
 
 void TestConverterJSON::testFileSection() {
-  QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_SOURCE_DIR"/confs/wo_files_section_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    FilesSectionMissingException
-  );
+  QVERIFY_EXCEPTION_THROWN(ConverterJSON(TESTS_SOURCE_DIR "/confs/wo_files_section_config.json",
+                                         TEST_REQUESTS_FILENAME,
+                                         TEST_ANSWERS_FILENAME),
+                           FilesSectionMissingException);
 }
 
 void TestConverterJSON::testNoMaxResponsesSection() {
-  QVERIFY_EXCEPTION_THROWN(
-      ConverterJSON(TESTS_SOURCE_DIR"/confs/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-      NoMaxResponsesException
-      );
+  QVERIFY_EXCEPTION_THROWN(ConverterJSON(TESTS_SOURCE_DIR "/confs/no_max_responses_config.json",
+                                         TEST_REQUESTS_FILENAME,
+                                         TEST_ANSWERS_FILENAME),
+                           NoMaxResponsesException);
 }
 
 void TestConverterJSON::testGetTextDocuments() {
-  std::stringstream errorLog;
-  std::streambuf* originalBuffer = std::cerr.rdbuf();
-  std::cerr.rdbuf(errorLog.rdbuf());
+  std::stringstream error_log;
+  std::streambuf* original_buffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(error_log.rdbuf());
 
   try {
-    ConverterJSON converter(
-      TESTS_SOURCE_DIR"/confs/good_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME
-    );
-    std::vector<std::string> resourceFilenames = converter.GetTextDocuments();
-    std::string errorMessage = errorLog.str();
-    QCOMPARE(errorMessage, "File ../resources/missed_file.txt not found\n");
-    std::cerr.rdbuf(originalBuffer);
-    QCOMPARE(resourceFilenames.size(), 1);
+    ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                            TEST_REQUESTS_FILENAME,
+                            TEST_ANSWERS_FILENAME);
+    std::vector<std::string> resource_filenames = converter.GetTextDocuments();
+    std::string error_message = error_log.str();
+    QCOMPARE(error_message, "File ../resources/missed_file.txt not found\n");
+    std::cerr.rdbuf(original_buffer);
+    QCOMPARE(resource_filenames.size(), 1);
+    QCOMPARE(resource_filenames.front().c_str(), "Testing text contains five words");
 
   } catch (const std::exception& ex) {
-    std::cerr.rdbuf(originalBuffer);
+    std::cerr.rdbuf(original_buffer);
     std::stringstream ss;
     ss << "Test is interrupted by exception: " << ex.what();
     QFAIL(ss.str().c_str());
   }
 }
 
-void TestConverterJSON::testResponsesLimit() {
-  QVERIFY_EXCEPTION_THROWN(
-    ConverterJSON(TESTS_SOURCE_DIR"/confs/no_max_responses_config.json", TEST_REQUESTS_FILENAME, TEST_ANSWERS_FILENAME),
-    NoMaxResponsesException
-  );
+void TestConverterJSON::testGetResponsesLimit()
+{
+  ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                          TEST_REQUESTS_FILENAME,
+                          TEST_ANSWERS_FILENAME);
+
+  QCOMPARE(converter.GetResponsesLimit(), 5);
 }
 
-void TestConverterJSON::testGetRequestsWhenMissingFile()
+void TestConverterJSON::testGetRequestsWhenlMissingFile()
 {
-  std::stringstream errorLog;
-  std::streambuf* originalBuffer = std::cerr.rdbuf();
-  std::cerr.rdbuf(errorLog.rdbuf());
+  std::stringstream error_log;
+  std::streambuf* original_buffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(error_log.rdbuf());
 
   try {
     ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
@@ -127,12 +130,12 @@ void TestConverterJSON::testGetRequestsWhenMissingFile()
                             TEST_ANSWERS_FILENAME);
     std::vector<std::string> requests = converter.GetRequests();
 
-    std::cerr.rdbuf(originalBuffer);
+    std::cerr.rdbuf(original_buffer);
 
-	QCOMPARE(errorLog.str(), "The file " TESTS_SOURCE_DIR "/requests/missing.json is missing\n");
+	QCOMPARE(error_log.str(), "The file " TESTS_SOURCE_DIR "/requests/missing.json is missing\n");
 	QCOMPARE(requests.size(), 0);
   } catch (std::exception& ex) {
-    std::cerr.rdbuf(originalBuffer);
+    std::cerr.rdbuf(original_buffer);
     std::stringstream ss;
     ss << "Test is interrupted by exception: " << ex.what();
     QFAIL(ss.str().c_str());
@@ -141,9 +144,9 @@ void TestConverterJSON::testGetRequestsWhenMissingFile()
 
 void TestConverterJSON::testGetRequestsWithEmptyFile()
 {
-  std::stringstream errorLog;
-  std::streambuf* originalBuffer = std::cerr.rdbuf();
-  std::cerr.rdbuf(errorLog.rdbuf());
+  std::stringstream error_log;
+  std::streambuf* original_buffer = std::cerr.rdbuf();
+  std::cerr.rdbuf(error_log.rdbuf());
 
   try {
     ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
@@ -151,18 +154,50 @@ void TestConverterJSON::testGetRequestsWithEmptyFile()
                             TEST_ANSWERS_FILENAME);
     std::vector<std::string> requests = converter.GetRequests();
 
-    std::cerr.rdbuf(originalBuffer);
+    std::cerr.rdbuf(original_buffer);
 
-	QCOMPARE(errorLog.str(), "");
+	QCOMPARE(error_log.str(), "");
 	QCOMPARE(requests.size(), 0);
   } catch (const std::exception& ex) {
-    std::cerr.rdbuf(originalBuffer);
+    std::cerr.rdbuf(original_buffer);
     std::stringstream ss;
     ss << "Test is interrupted by exception: " << ex.what();
     QFAIL(ss.str().c_str());
   }
 }
 
+void TestConverterJSON::testGetRequestsFor1024k()
+{
+  try {
+    ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                            TESTS_SOURCE_DIR "/requests/many_requests.json",
+                            TEST_ANSWERS_FILENAME);
+    std::vector<std::string> requests = converter.GetRequests();
+    QCOMPARE(requests.size(), 1000);
+  } catch (const std::exception& ex) {
+    std::stringstream ss;
+    ss << "Test is interrupted by exception: " << ex.what();
+    QFAIL(ss.str().c_str());
+  }
+}
+
+void TestConverterJSON::testGetRequestsWhenLongRequestLine()
+{
+  ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
+                          TESTS_SOURCE_DIR "/requests/long_requests_lines.json",
+                          TEST_ANSWERS_FILENAME);
+  std::vector<std::string> requests = converter.GetRequests();
+
+  std::string first_request = requests.front();
+  std::istringstream iss(first_request);
+  std::vector<std::string> words;
+  std::string word;
+  while (iss >> word) {
+    words.push_back(word);
+  }
+
+  QCOMPARE(words.size(), 10);
+}
 
 void TestConverterJSON::testGetRequestsPositive() {
   ConverterJSON converter(TESTS_SOURCE_DIR "/confs/good_config.json",
@@ -194,49 +229,50 @@ void TestConverterJSON::testPutAnswers()
 	std::ifstream file(TEST_ANSWERS_FILENAME);
 	QVERIFY2(file.is_open(), "The answers file cannot open");
 
-	json jData = json::parse(file);
-	QVERIFY2(jData.contains("/answers"_json_pointer),
+	json j_data = json::parse(file);
+	QVERIFY2(j_data.contains("/answers"_json_pointer),
 			 "The answers file should have 'answers' root node");
 
-	QVERIFY2(jData.contains("/answers/request001"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request001"_json_pointer),
 			 "The answers file should have '/answers/request001' node");
-	QVERIFY2(jData.contains("/answers/request001/result"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request001/result"_json_pointer),
 			 "The answers file should have '/answers/request001/result' node");
-	QVERIFY2(jData.at("/answers/request001/result"_json_pointer) == "false",
+	QVERIFY2(j_data.at("/answers/request001/result"_json_pointer) == "false",
 			 "The '/answers/request001/result' node should have 'false' value at answers file");
 
-	QVERIFY2(jData.contains("/answers/request002"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request002"_json_pointer),
 			 "The answers file should have '/answers/request002' node");
-	QVERIFY2(jData.contains("/answers/request002/result"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request002/result"_json_pointer),
 			 "The answers file should have '/answers/request002/result' node");
-	QVERIFY2(jData.at("/answers/request002/result"_json_pointer) == "true",
+	QVERIFY2(j_data.at("/answers/request002/result"_json_pointer) == "true",
 			 "The '/answers/request002/result' node should have 'true' value at answers file");
-	QVERIFY2(jData.contains("/answers/request002/docid"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request002/docid"_json_pointer),
 			 "The answers file should have '/answers/request002/docid' node");
-	QVERIFY2(jData.at("/answers/request002/docid"_json_pointer) == 0,
+	QVERIFY2(j_data.at("/answers/request002/docid"_json_pointer) == 0,
 			 "The '/answers/request002/docid' node should have 0 value at answers file");
-	QVERIFY2(jData.contains("/answers/request002/rank"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request002/rank"_json_pointer),
 			 "The answers file should have '/answers/request002/rank' node");
 	{
-	  const float rank = jData.at("/answers/request002/rank"_json_pointer);
+	  const float rank = j_data.at("/answers/request002/rank"_json_pointer);
 	  QVERIFY2(std::abs(rank - 0.99) < FLT_EPSILON,
 			   "The '/answers/request002/rank' node should have 0.99 value at answers file");
 	}
 
-	QVERIFY2(jData.contains("/answers/request003"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request003"_json_pointer),
 			 "The answers file should have '/answers/request003' node");
-	QVERIFY2(jData.contains("/answers/request003/result"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request003/result"_json_pointer),
 			 "The answers file should have '/answers/request003/result' node");
-	QVERIFY2(jData.at("/answers/request003/result"_json_pointer) == "true",
+	QVERIFY2(j_data.at("/answers/request003/result"_json_pointer) == "true",
 			 "The '/answers/request003/result' node should have 'true' value at answers file");
-	QVERIFY2(jData.contains("/answers/request003/relevance"_json_pointer),
+	QVERIFY2(j_data.contains("/answers/request003/relevance"_json_pointer),
 			 "The answers file should have '/answers/request003/relevance' node");
 	{
-	  const std::vector<json> relevanceList = jData.at("/answers/request003/relevance"_json_pointer);
-	  QCOMPARE(relevanceList.size(), 2);
-	  auto relevanceListItr = relevanceList.begin();
+	  const std::vector<json> relevance_list = j_data.at(
+		  "/answers/request003/relevance"_json_pointer);
+	  QCOMPARE(relevance_list.size(), 2);
+	  auto relevance_list_itr = relevance_list.begin();
 	  {
-		const auto node = *relevanceListItr;
+		const auto node = *relevance_list_itr;
 		QVERIFY2(
 			node.contains("docid"),
 			"The first relevance item in '/answers/request003/relevance' should have docid node");
@@ -249,9 +285,9 @@ void TestConverterJSON::testPutAnswers()
 			std::abs(rank - 0.99) < FLT_EPSILON,
 			"The rank in first item of '/answers/request003/relevance' should have 0.99 value");
 	  }
-	  ++relevanceListItr;
+	  ++relevance_list_itr;
 	  {
-		const auto node = *relevanceListItr;
+		const auto node = *relevance_list_itr;
 		QVERIFY2(
 			node.contains("docid"),
 			"The second relevance item in '/answers/request003/relevance' should have docid node");

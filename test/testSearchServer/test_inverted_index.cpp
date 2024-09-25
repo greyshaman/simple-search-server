@@ -1,7 +1,6 @@
 #include <QtTest/QTest>
 #include <vector>
 #include <string>
-#include <sstream>
 #include <algorithm>
 
 #include "inverted-index.h"
@@ -17,7 +16,6 @@ class TestInvertedIndex : public QObject
                                        const vector<string>& requests,
                                        const vector<vector<Entry>>& expected);
 
-  void showVector(const vector<vector<Entry>>& vec);
   void deepSort(vector<vector<Entry>>& source);
 
 public:
@@ -45,32 +43,8 @@ void TestInvertedIndex::checkInvertedIndexFunctionality(
     result.push_back(word_count);
   }
 
-  // TODO remove DEBUG messages
-  qDebug() << "result before depp sort: ";
-  showVector(result);
   deepSort(result);
-  qDebug() << "result after deep sort: ";
-  showVector(result);
-  qDebug() << "expected: ";
-  showVector(expected);
   QCOMPARE(result, expected);
-}
-
-void TestInvertedIndex::showVector(const vector<vector<Entry>>& vec)
-{
-  stringstream ss;
-  ss << "\n{";
-  for (auto wordRel : vec) {
-    ss << "\n\t{";
-    for (auto entry : wordRel) {
-      const auto doc_id = entry.doc_id;
-      const auto count = entry.count;
-      ss << "<" << doc_id << ", " << count << ">, ";
-    }
-    ss << "\n\t}";
-  }
-  ss << "\n}\n";
-  qDebug() << ss.str().c_str();
 }
 
 void TestInvertedIndex::deepSort(vector<vector<Entry>>& source)
@@ -80,14 +54,12 @@ void TestInvertedIndex::deepSort(vector<vector<Entry>>& source)
   }
 }
 
-TestInvertedIndex::~TestInvertedIndex() {
-}
+TestInvertedIndex::~TestInvertedIndex() {}
 
 void TestInvertedIndex::testBasic1()
 {
-  const vector<string> docs
-      = {"london is the capital of great britain",
-         "big ben is the nickname for the Great bell of the striking clock"};
+  const vector<string> docs = {"london is the capital of great britain",
+                               "big ben is the nickname for the Great bell of the striking clock"};
   const vector<string> requests = {"london", "the"};
   const vector<vector<Entry>> expected = {{{0, 1}}, {{0, 1}, {1, 3}}};
 

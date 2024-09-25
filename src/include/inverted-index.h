@@ -9,16 +9,20 @@ namespace search_server {
 namespace inverted_index {
 
 
+/**
+ * @brief Entry структура для подсчёта колличества вхождения слова в документ
+ */
 struct Entry
 {
   size_t doc_id, count;
+
+  Entry() = default;
 
   bool operator==(const Entry& other) const
   {
     return (doc_id == other.doc_id && count == other.count);
   }
 
-  bool operator> (const Entry& other) const { return doc_id > other.doc_id; }
   bool operator< (const Entry& other) const { return doc_id < other.doc_id; }
 
   Entry(size_t in_doc_id, size_t in_count)
@@ -27,6 +31,9 @@ struct Entry
   {}
 };
 
+/**
+ * @brief InvertedIndex индексирует текст докуметов и предоставляет собранную информацию
+ */
 class InvertedIndex
 {
   std::vector<std::string> docs;
@@ -53,7 +60,7 @@ public:
    * @param word слово, частоту вхождений которого необходимо определить
    * @return возвращает подготовленный список с частотой указанного слова
    */
-  std::vector<Entry> GetWordCount(const std::string& word);
+  std::vector<Entry> GetWordCount(const std::string& word) const;
 };
 
 }

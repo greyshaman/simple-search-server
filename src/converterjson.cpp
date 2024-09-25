@@ -1,6 +1,7 @@
 #include <fstream>
 #include <filesystem>
 #include <iostream>
+#include <numeric>
 
 #include "converterjson.h"
 #include "config-file-missing-exception.h"
@@ -18,13 +19,16 @@ const std::string VERSION = std::string(
   #endif
 );
 
-const unsigned int MAX_REQUESTS_PER_LINE = 10;
+const size_t BUFF_SIZE = 1024;
+
+const size_t MAX_REQUESTS = 1000;
+const size_t MAX_WORDS_PER_REQUEST = 10;
 
 using json = nlohmann::json;
 using namespace search_server;
 
 json ConverterJSON::readJsonFile(const std::string& filename,
-                                           const bool is_required = false)
+                                           const bool is_required = false) const
 {
   json result;
   if (!std::filesystem::is_regular_file(filename)) {
@@ -49,7 +53,7 @@ std::filesystem::path ConverterJSON::getParentPath(const std::string& filename) 
   return std::filesystem::path(filename).parent_path();
 }
 
-void ConverterJSON::loadConfig(const json json_config)
+void ConverterJSON::loadConfig(const json& json_config)
 {
   if (json_config.size() == 0 || !json_config.contains("config")) {
     throw ConfigFileIsEmptyException(config_filename);
@@ -69,13 +73,24 @@ void ConverterJSON::loadConfig(const json json_config)
   }
 }
 
-search_server::requests_format::RequestsConfig ConverterJSON::loadRequests(const nlohmann::json json_requests)
+search_server::requests_format::RequestsConfig ConverterJSON::loadRequests(
+    const nlohmann::json& json_requests)
 {
-  using namespace search_server::requests_format;
-  RequestsConfig requests_config;
+  requests_format::RequestsConfig requests_config;
   if (json_requests.size() > 0 && json_requests.contains("requests")) {
-    requests_config = json_requests.template get<RequestsConfig>();
+    requests_config = json_requests.template get<requests_format::RequestsConfig>();
   }
+
+  if (requests_config.requests.size() > MAX_REQUESTS) {
+    auto& requests = requests_config.requests;
+    requests.resize(MAX_REQUESTS);
+    requests.shrink_to_fit();
+  }
+
+  for (auto& request : requests_config.requests) {
+    truncToNWords(request, MAX_WORDS_PER_REQUEST);
+  }
+
   return requests_config;
 }
 
@@ -97,9 +112,9 @@ ConverterJSON::~ConverterJSON() {}
 
 std::vector<std::string> ConverterJSON::GetTextDocuments()
 {
-  std::vector<std::string> actual_file_list;
+  std::vector<std::string> docs;
   if (converter_config.files.size() > 0) {
-      for (auto filename : converter_config.files) {
+      for (auto& filename : converter_config.files) {
         std::filesystem::path filepath(filename);
 
 		if (filepath.is_relative()) {
@@ -110,13 +125,29 @@ std::vector<std::string> ConverterJSON::GetTextDocuments()
 		}
 
 		if (std::filesystem::is_regular_file(filepath)) {
-		  actual_file_list.push_back(filepath);
+		  std::ifstream resource_file(filepath);
+		  if (resource_file.is_open()) {
+			std::stringstream doc_strem;
+			char buff[BUFF_SIZE];
+			while (!resource_file.eof()) {
+			  resource_file.getline(buff, BUFF_SIZE);
+			  doc_strem << buff;
+			}
+			docs.emplace_back(doc_strem.str());
+		  } else {
+			std::cerr << "Cannot open file " << filename << std::endl;
+		  }
 		} else {
 		  std::cerr << "File " << filename << " not found\n";
 		}
 	}
   }
-  return actual_file_list;
+  return docs;
+}
+
+int ConverterJSON::GetResponsesLimit()
+{
+  return converter_config.max_responses;
 }
 
 std::vector<std::string> ConverterJSON::GetRequests()
@@ -132,6 +163,7 @@ void ConverterJSON::PutAnswers(std::vector<std::vector<std::pair<int, float>>> a
   std::ofstream file(answers_filename, std::ios::out | std::ios::trunc);
 
   if (file.is_open()) {
+    // TODO remove setw(4)
     file << std::setw(4) << json_answers;
   }
 }
@@ -171,4 +203,24 @@ json ConverterJSON::prepareAnswersToExport(std::vector<std::vector<std::pair<int
   }
 
   return json::object({{"answers", json_answers}});
+}
+
+void ConverterJSON::truncToNWords(std::string& string_to_trunk, const size_t n)
+{
+  std::istringstream iss(string_to_trunk);
+  std::vector<std::string> words;
+  std::string word;
+
+  while (iss >> word) {
+    words.push_back(word);
+  }
+
+  if (words.size() > n) {
+    string_to_trunk = std::accumulate(words.cbegin(),
+                                   words.cbegin() + n,
+                                   std::string(),
+                                   [](std::string acc, const std::string& word) {
+                                     return acc + " " + word;
+                                   });
+  }
 }

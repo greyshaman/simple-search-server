@@ -1,1 +1,1 @@
-тестовый текст содержащий пять слов
+Testing text contains five words

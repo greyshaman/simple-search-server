@@ -11,6 +11,9 @@ namespace requests_format {
 
 typedef std::string RequestsLine;
 
+/**
+ * @brief RequestsConfig структура используется для десериализации requests.json
+ */
 struct RequestsConfig
 {
   std::vector<RequestsLine> requests;

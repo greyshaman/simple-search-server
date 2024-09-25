@@ -1,19 +1,27 @@
+#include <iostream>
+#include <string>
 #include <QCoreApplication>
+#include <exception>
+
 #include "converterjson.h"
-int main(int argc, char *argv[]) {
-  // QCoreApplication a(argc, argv);
-  search_server::ConverterJSON converter;
+#include "inverted-index.h"
+#include "search-server.h"
 
-  // Set up code that uses the Qt event loop here.
-  // Call a.quit() or a.exit() to quit the application.
-  // A not very useful example would be including
-  // #include <QTimer>
-  // near the top of the file and calling
-  // QTimer::singleShot(5000, &a, &QCoreApplication::quit);
-  // which quits the application after 5 seconds.
+int main()
+{
+  std::string config_filename{"../../../test/testSearchServer/debug/config.json"};
+  std::string requests_filename{"../../../test/testSearchServer/debug/requests.json"};
+  std::string answers_filename{"./answers.json"};
 
-  // If you do not need a running Qt event loop, remove the call
-  // to a.exec() or use the Non-Qt Plain C++ Application template.
+  try {
+    search_server::ConverterJSON converter(config_filename, requests_filename, answers_filename);
+    search_server::inverted_index::InvertedIndex idx;
+    idx.UpdateDocumentBase(converter.GetTextDocuments());
+    search_server::SearchServer srv(idx);
+    srv.search(converter.GetRequests());
+  } catch (const std::exception& ex) {
+    std::cerr << "Exception occured: " << ex.what() << std::endl;
+  }
 
-  // return a.exec();
+  return 0;
 }

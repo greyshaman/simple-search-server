@@ -34,7 +34,7 @@ void InvertedIndex::updateFreqDictionaryForDoc(const size_t doc_id,
 	if (dict.count(word) == 0) {
 	  dict[word] = std::vector<Entry>{{Entry(doc_id, count)}};
 	} else {
-	  dict[word].push_back(Entry(doc_id, count));
+	  dict[word].emplace_back(Entry(doc_id, count));
 	}
   }
 }
@@ -70,14 +70,16 @@ void InvertedIndex::UpdateDocumentBase(const std::vector<std::string> input_docs
   }
 }
 
-std::vector<Entry> InvertedIndex::GetWordCount(const std::string& word)
+std::vector<Entry> InvertedIndex::GetWordCount(const std::string& word) const
 {
+  std::vector<Entry> result;
   if (freq_dictionary.count(word) > 0) {
     const auto found_itr = freq_dictionary.find(word);
-    return (*found_itr).second;
-  } else {
-    return std::vector<Entry>();
+    const auto word_entries = (*found_itr).second;
+    result.resize(word_entries.size());
+    std::copy(word_entries.begin(), word_entries.end(), result.begin());
   }
+  return result;
 }
 
 }
