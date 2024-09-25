@@ -7,6 +7,7 @@
 
 #include "converter-config.h"
 #include "requests.h"
+#include "search-server.h"
 
 namespace search_server {
 
@@ -58,9 +59,27 @@ public:
   std::vector<std::string> GetRequests();
 
   /**
+   * @brief GetName Возвращает название приложения прочитанное из конфигурационного файла
+   * @return имя программы
+   */
+  std::string GetName();
+
+  /**
+   * @brief GetVersion возвращает версию продукта
+   * @return
+   */
+  std::string GetVersion();
+
+  /**
    * @brief putAnswers - Положить в файл answer.json результаты поисковых запросов
    * @param std::vector<std::vector<std::pair<int, float>>> answer
    */
-  void PutAnswers(std::vector<std::vector<std::pair<int, float>>> answer);
+  void PutAnswers(const std::vector<std::vector<std::pair<int, float>>> answer);
+
+  /**
+   * @brief PutAnswers Положить в файл answer.json результаты поисковых запросов
+   * @param answer
+   */
+  void PutAnswers(const std::vector<std::vector<RelativeRelevance>> answer);
 };
 }

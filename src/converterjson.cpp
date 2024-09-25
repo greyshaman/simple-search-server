@@ -156,7 +156,17 @@ std::vector<std::string> ConverterJSON::GetRequests()
   return requests_config.requests;
 }
 
-void ConverterJSON::PutAnswers(std::vector<std::vector<std::pair<int, float>>> answers)
+std::string ConverterJSON::GetName()
+{
+  return converter_config.name;
+}
+
+string ConverterJSON::GetVersion()
+{
+  return converter_config.version;
+}
+
+void ConverterJSON::PutAnswers(const std::vector<std::vector<std::pair<int, float>>> answers)
 {
   json json_answers = prepareAnswersToExport(answers);
 
@@ -166,6 +176,21 @@ void ConverterJSON::PutAnswers(std::vector<std::vector<std::pair<int, float>>> a
     // TODO remove setw(4)
     file << std::setw(4) << json_answers;
   }
+}
+
+void ConverterJSON::PutAnswers(const std::vector<std::vector<RelativeRelevance>> answer)
+{
+  std::vector<std::vector<std::pair<int, float>>> exportable_answer;
+  for (auto& answers_by_request : answer) {
+    std::vector<std::pair<int, float>> request_answer_export;
+    for (auto& answers_by_doc : answers_by_request) {
+      request_answer_export.emplace_back(
+          std::pair<int, float>{answers_by_doc.doc_id, answers_by_doc.rank});
+    }
+    exportable_answer.push_back(request_answer_export);
+  }
+
+  PutAnswers(exportable_answer);
 }
 
 json ConverterJSON::prepareAnswersToExport(std::vector<std::vector<std::pair<int, float>>> answers)

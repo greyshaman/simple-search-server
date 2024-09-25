@@ -9,16 +9,23 @@
 
 int main()
 {
-  std::string config_filename{"../../../test/testSearchServer/debug/config.json"};
-  std::string requests_filename{"../../../test/testSearchServer/debug/requests.json"};
-  std::string answers_filename{"./answers.json"};
 
   try {
-    search_server::ConverterJSON converter(config_filename, requests_filename, answers_filename);
+    search_server::ConverterJSON converter;
+    std::cout << "Starting " << converter.GetName() << " version " << converter.GetVersion()
+              << std::endl;
+
     search_server::inverted_index::InvertedIndex idx;
     idx.UpdateDocumentBase(converter.GetTextDocuments());
+    std::cout << "Texts are indexed\n";
+
+    std::cout << "Reading requests\n";
     search_server::SearchServer srv(idx);
-    srv.search(converter.GetRequests());
+    auto search_result = srv.search(converter.GetRequests());
+    std::cout << "Search results complete and will write into result file\n";
+    converter.PutAnswers(search_result);
+    std::cout << "Answers wrote into file\n";
+    std::cout << "Program complete. Thank you.\nBye\n";
   } catch (const std::exception& ex) {
     std::cerr << "Exception occured: " << ex.what() << std::endl;
   }
