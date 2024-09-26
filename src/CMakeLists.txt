@@ -34,3 +34,18 @@ target_link_libraries(
   SearchServerLib
   nlohmann_json::nlohmann_json
 )
+
+set(DEMO_FILES_DIR ${TestSearchServer_SOURCE_DIR}/debug)
+set(DEMO_FILES
+  ${DEMO_FILES_DIR}/config.json
+  ${DEMO_FILES_DIR}/requests.json
+  ${DEMO_FILES_DIR}/file001.txt
+  ${DEMO_FILES_DIR}/file002.txt
+  ${DEMO_FILES_DIR}/file003.txt
+  ${DEMO_FILES_DIR}/file004.txt
+)
+install(TARGETS search-server SearchServerLib DESTINATION demo)
+install(
+  FILES ${DEMO_FILES}
+  DESTINATION ${CMAKE_BINARY_DIR}/demo
+)
