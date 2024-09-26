@@ -1,4 +1,4 @@
-[header image](https://github.com/greyshaman/simple-search-server/raw/refs/heads/master/images/orig%20-%202024-09-26T112502.725.webp)
+<img src="https://github.com/greyshaman/simple-search-server/raw/refs/heads/master/images/orig%20-%202024-09-26T112502.725.webp" width="50%">
 
 # Simple Search Server
 
