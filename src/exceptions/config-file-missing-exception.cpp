@@ -1,5 +1,5 @@
 #include <filesystem>
-#include "config-file-missing-exception.h"
+#include "exceptions/config-file-missing-exception.h"
 
 ConfigFileMissingException::ConfigFileMissingException(const std::string& in_filename)
   : ConfigParserException(

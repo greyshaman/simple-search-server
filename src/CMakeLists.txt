@@ -1,13 +1,5 @@
-set(INCLUDE_DIR include)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-set(EXCEPTIONS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/exceptions)
-set(EXCEPTIONS_INCLUDE_DIR ${EXCEPTIONS_DIR}/include)
-
-include_directories(include ${EXCEPTIONS_INCLUDE_DIR})
-
-configure_file(config.h.in config.h @ONLY)
+set(EXCEPTIONS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/exceptions")
+set(EXCEPTIONS_INCLUDE_DIR "${INCLUDE_DIR}/exceptions")
 
 add_library(SearchServerLib SHARED
   config.h.in
@@ -24,6 +16,10 @@ add_library(SearchServerLib SHARED
   ${EXCEPTIONS_INCLUDE_DIR}/files-section-missing-exception.h ${EXCEPTIONS_DIR}/files-section-missing-exception.cpp
 )
 
+# target_include_directories(SearchServerLib PUBLIC ${PROJECT_BINARY_DIR}/src)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+configure_file(config.h.in config.h @ONLY)
+
 add_executable(search-server
   main.cpp
 )
@@ -33,19 +29,4 @@ target_link_libraries(
   Qt${QT_VERSION_MAJOR}::Core
   SearchServerLib
   nlohmann_json::nlohmann_json
-)
-
-set(DEMO_FILES_DIR ${TestSearchServer_SOURCE_DIR}/debug)
-set(DEMO_FILES
-  ${DEMO_FILES_DIR}/config.json
-  ${DEMO_FILES_DIR}/requests.json
-  ${DEMO_FILES_DIR}/file001.txt
-  ${DEMO_FILES_DIR}/file002.txt
-  ${DEMO_FILES_DIR}/file003.txt
-  ${DEMO_FILES_DIR}/file004.txt
-)
-install(TARGETS search-server SearchServerLib DESTINATION demo)
-install(
-  FILES ${DEMO_FILES}
-  DESTINATION ${CMAKE_BINARY_DIR}/demo
 )

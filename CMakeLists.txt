@@ -15,8 +15,21 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 add_subdirectory(nlohmann_json)
 include_directories(SYSTEM nlohmann_json/include)
 
+include_directories(include)
+set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 add_subdirectory(src)
-add_subdirectory(test)
+add_subdirectory(tests)
+
+set(DEMO_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/demo)
+set(DEMO_FILES
+  ${DEMO_FILES_DIR}/config.json
+  ${DEMO_FILES_DIR}/requests.json
+  ${DEMO_FILES_DIR}/file001.txt
+  ${DEMO_FILES_DIR}/file002.txt
+  ${DEMO_FILES_DIR}/file003.txt
+  ${DEMO_FILES_DIR}/file004.txt
+)
 
 include(GNUInstallDirs)
 install(TARGETS search-server

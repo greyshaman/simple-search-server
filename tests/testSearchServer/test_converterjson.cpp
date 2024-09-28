@@ -10,13 +10,13 @@
 
 #include "config-test.h"
 #include "test_search_server.h"
-
 #include "converterjson.h"
-#include "config-file-missing-exception.h"
-#include "config-file-is-empty-exception.h"
-#include "incorrect-version-exception.h"
-#include "no-max-responses-exception.h"
-#include "files-section-missing-exception.h"
+
+#include "exceptions/config-file-missing-exception.h"
+#include "exceptions/config-file-is-empty-exception.h"
+#include "exceptions/incorrect-version-exception.h"
+#include "exceptions/no-max-responses-exception.h"
+#include "exceptions/files-section-missing-exception.h"
 
 using json = nlohmann::json;
 using namespace search_server;
