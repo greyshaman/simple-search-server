@@ -8,6 +8,7 @@
 #include "converter-config.h"
 #include "requests.h"
 #include "search-server.h"
+#include "export.h"
 
 namespace search_server {
 
@@ -43,43 +44,43 @@ public:
    * @return std::vector<std::string> Возвращает список с содержимым файлов
    *        перечисленных в config.json
    */
-  std::vector<std::string> GetTextDocuments();
+  SEARCHENGINELIB_EXPORT std::vector<std::string> GetTextDocuments();
 
   /**
    * @brief GetResponsesLimit - метод считывает поле max_responses для определения
    *        предельного количества ответов на один запрос
    * @return int
    */
-  int GetResponsesLimit();
+  SEARCHENGINELIB_EXPORT int GetResponsesLimit();
 
   /**
    * @brief GetRequests - метод для получения запросов из файла requests.json
    * @return std::vector<std:string> возвращает список запросов из файла
    */
-  std::vector<std::string> GetRequests();
+  SEARCHENGINELIB_EXPORT std::vector<std::string> GetRequests();
 
   /**
    * @brief GetName Возвращает название приложения прочитанное из конфигурационного файла
    * @return имя программы
    */
-  std::string GetName();
+  SEARCHENGINELIB_EXPORT std::string GetName();
 
   /**
    * @brief GetVersion возвращает версию продукта
    * @return
    */
-  std::string GetVersion();
+  SEARCHENGINELIB_EXPORT std::string GetVersion();
 
   /**
    * @brief putAnswers - Положить в файл answer.json результаты поисковых запросов
    * @param std::vector<std::vector<std::pair<int, float>>> answer
    */
-  void PutAnswers(const std::vector<std::vector<std::pair<int, float>>> answer);
+  SEARCHENGINELIB_EXPORT void PutAnswers(const std::vector<std::vector<std::pair<int, float>>> answer);
 
   /**
    * @brief PutAnswers Положить в файл answer.json результаты поисковых запросов
    * @param answer
    */
-  void PutAnswers(const std::vector<std::vector<RelativeRelevance>> answer);
+  SEARCHENGINELIB_EXPORT void PutAnswers(const std::vector<std::vector<RelativeRelevance>> answer);
 };
 }

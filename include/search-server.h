@@ -5,6 +5,7 @@
 #include <cfloat>
 
 #include "inverted-index.h"
+#include "export.h"
 
 using namespace std;
 
@@ -76,7 +77,7 @@ public:
    * @param idx в конструктор класса передаётся ссылка на класс InvertedIndex,
    *        чтобы SearchServer мог узнать частоту слов встречаемых в запросе
    */
-  SearchServer(inverted_index::InvertedIndex& idx)
+  SEARCHENGINELIB_EXPORT SearchServer(inverted_index::InvertedIndex& idx)
       : index(idx) {};
 
   /**
@@ -85,7 +86,7 @@ public:
    * @param max_reponses максимальное количество результатов выводимых для каждого запроса
    * @return возвращает отсортированный список релевантных ответов для заданных запросов
    */
-  vector<vector<RelativeRelevance>> search(const vector<std::string>& queries_input,
+  SEARCHENGINELIB_EXPORT vector<vector<RelativeRelevance>> search(const vector<std::string>& queries_input,
                                            const int max_responses = MAX_RESPONSES_DEFAULT);
 };
 

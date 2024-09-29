@@ -1,6 +1,47 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(search-server VERSION 0.1 LANGUAGES CXX)
+project(search-engine
+  VERSION 0.1
+  DESCRIPTION "The Search Server engine is library of service with inverted index functionality"
+  LANGUAGES CXX)
+
+# ## general settings and options ## #
+
+include(cmake/utils.cmake)
+include(GNUInstallDirs)
+
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
+
+option(SEARCH_ENGINE_BUILD_TESTS "Build search-engine tests" OFF)
+option(SEARCH_ENGINE_BUILD_EXAMPLES "Build search-engine library examples" OFF)
+option(SEARCH_ENGINE_BUILD_DOCS "Build search-engine library documentation" OFF)
+option(SEARCH_ENGINE_INSTALL
+  "Generate target for installing search-engine library" ${is_top_level}
+)
+
+set_if_undefined(SEARCH_ENGINE_INSTALL_CMAKEDIR
+  "${CMAKE_INSTALL_LIBDIR}/cmake/search-engine-${PROJECT_VERSION}" CACHE STRING
+  "Install path for search-engine package-related CMake files"
+)
+
+if(DEFINED SEARCH_ENGINE_SHARED_LIBS)
+  set(BUILD_SHARED_LIBS ${SEARCH_ENGINE_SHARED_LIBS})
+endif()
+
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  set_property(CACHE
+    CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo"
+  )
+endif()
+
+set_if_undefined(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set_if_undefined(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
+add_library(SearchEngineLib) # init lib target below
+add_library(search-engine::SearchEngineLib ALIAS SearchEngineLib)
+
+# ## dependencies ## #
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -9,31 +50,158 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
-
 add_subdirectory(nlohmann_json)
 include_directories(SYSTEM nlohmann_json/include)
 
+# ## search-engine sources ## #
+
+include(GenerateExportHeader)
+set(export_file_name "export-shared.h")
+
+if(NOT BUILD_SHARED_LIBS)
+  set(export_file_name "export-static.h")
+endif()
+
 include_directories(include)
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(EXCEPTIONS_INCLUDE_DIR "${INCLUDE_DIR}/exceptions")
 
-add_subdirectory(src)
-add_subdirectory(tests)
+generate_export_header(SearchEngineLib
+  EXPORT_FILE_NAME
+  "${CMAKE_CURRENT_BINARY_DIR}/include/${export_file_name}")
 
-set(DEMO_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/demo)
-set(DEMO_FILES
-  ${DEMO_FILES_DIR}/config.json
-  ${DEMO_FILES_DIR}/requests.json
-  ${DEMO_FILES_DIR}/file001.txt
-  ${DEMO_FILES_DIR}/file002.txt
-  ${DEMO_FILES_DIR}/file003.txt
-  ${DEMO_FILES_DIR}/file004.txt
+configure_file("${INCLUDE_DIR}/config-version.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/include/config-version.h"
+  @ONLY
 )
 
-include(GNUInstallDirs)
-install(TARGETS search-server
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+set(public_headers
+  "${INCLUDE_DIR}/export.h"
+  "${INCLUDE_DIR}/converter-config.h"
+  "${INCLUDE_DIR}/converterjson.h"
+  "${INCLUDE_DIR}/inverted-index.h"
+  "${INCLUDE_DIR}/requests.h"
+  "${INCLUDE_DIR}/search-server.h"
+  "${CMAKE_CURRENT_BINARY_DIR}/include/config-version.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/config-file-is-empty-exception.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/config-file-missing-exception.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/config-parser-exception.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/files-section-missing-exception.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/incorrect-version-exception.h"
+  "${EXCEPTIONS_INCLUDE_DIR}/no-max-responses-exception.h"
 )
 
+set(sources
+  ${public_headers}
+  src/converter-config.cpp
+  src/converterjson.cpp
+  src/inverted-index.cpp
+  src/search-server.cpp
+  src/exceptions/config-file-is-empty-exception.cpp
+  src/exceptions/config-file-missing-exception.cpp
+  src/exceptions/config-parser-exception.cpp
+  src/exceptions/files-section-missing-exception.cpp
+  src/exceptions/no-max-responses-exception.cpp
+)
+
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
+
+list(APPEND public_headers
+  "${CMAKE_CURRENT_BINARY_DIR}/include/${export_file_name}"
+)
+list(APPEND sources
+  "${CMAKE_CURRENT_BINARY_DIR}/include/${export_file_name}"
+)
+
+# ## search-engine target ## #
+
+include(CMakePackageConfigHelpers)
+
+target_sources(SearchEngineLib PRIVATE ${sources})
+target_compile_definitions(SearchEngineLib
+  PUBLIC
+    "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:SEARCH_ENGINE_STATIC_DEFINE>"
+)
+
+target_include_directories(SearchEngineLib
+  PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+set_target_properties(SearchEngineLib PROPERTIES
+  PUBLIC_HEADER "${public_headers}"
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+)
+
+# ## install target ## #
+
+if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
+  configure_package_config_file(cmake/search-engine-config.cmake.in search-engine-config.cmake
+    INSTALL_DESTINATION "${SEARCH_ENGINE_INSTALL_CMAKEDIR}"
+  )
+
+  write_basic_package_version_file(search-engine-config-version.cmake
+    COMPATIBILITY SameMajorVersion
+  )
+
+  install(TARGETS SearchEngineLib EXPORT SearchEngineLib_export
+    RUNTIME COMPONENT SearchEngineLib
+    LIBRARY COMPONENT SearchEngineLib NAMELINK_COMPONENT SearchEngineLib-dev
+    ARCHIVE COMPONENT SearchEngineLib-dev
+    PUBLIC_HEADER COMPONENT SearchEngineLib-dev
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/search-engine"
+  )
+
+  set(targets_file "search-engine-shared-targets.cmake")
+
+  if(NOT BUILD_SHARED_LIBS)
+    set(targets_file "search-engine-static-targets.cmake")
+  endif()
+
+  install(EXPORT SearchEngineLib_export
+    COMPONENT SearchEngineLib-dev
+    FILE "${targets_file}"
+    DESTINATION "${SEARCH_ENGINE_INSTALL_CMAKEDIR}"
+    NAMESPACE search-engine::
+  )
+
+  install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/search-engine-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/search-engine-config-version.cmake"
+    COMPONENT SearchEngineLib-dev
+    DESTINATION "${SEARCH_ENGINE_INSTALL_CMAKEDIR}"
+  )
+
+  if(MSVC)
+    set(pdb_file "")
+    set(pdb_file_destination "")
+
+    if(BUILD_SHARED_LIBS)
+      set(pdb_file "$<TARGET_PDB_FILE:search-engine>")
+      set(pdb_file_destination "${CMAKE_INSTALL_BINDIR}")
+    else()
+      # TARGET_PDB_FILE does not work for pdb file generated for static library build, determining it manually
+      set(pdb_file
+        "$<TARGET_FILE_DIR:search-engine>/$<TARGET_FILE_PREFIX:search-engine>$<TARGET_FILE_BASE_NAME:search-engine>.pdb"
+      )
+      set(pdb_file_destination "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+
+    install(FILES "${pdb_file}"
+      COMPONENT SearchEngineLib-dev
+      CONFIGURATIONS Debug RelWithDebInfo
+      DESTINATION "${pdb_file_destination}"
+      OPTIONAL)
+  endif()
+endif()
+
+
+# ToDo only for enabled tests
+# find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+# find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+# add_subdirectory(tests)

@@ -9,7 +9,7 @@
 #include "exceptions/incorrect-version-exception.h"
 #include "exceptions/no-max-responses-exception.h"
 #include "exceptions/files-section-missing-exception.h"
-#include "config.h"
+#include "config-version.h"
 
 const std::string VERSION = std::string(
   #ifdef PROJECT_VERSION
