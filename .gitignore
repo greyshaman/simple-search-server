@@ -35,6 +35,8 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 config.h
+export-static.h
+export-shared.h
 
 # qtcreator generated files
 *.pro.user*
