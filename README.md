@@ -291,4 +291,4 @@ include_directories(SYSTEM simple-search-server/include)
 
 ### Api документация
 
-Краткую документацию по API библиотеки можно найти [здесь](https://github.com/greyshaman/simple-search-server/blob/master/docs/index.html)
+Краткую документацию по API библиотеки можно найти в папке docs. Достаточно открыть index.html в браузере.
