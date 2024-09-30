@@ -1,0 +1,15 @@
+<map id="ConfigParserException" name="ConfigParserException">
+<area shape="rect" id="Node000001" title="ConfigParserException базовый класс для исключений связанных с процессом распознования конфигорационн..." alt="" coords="168,104,335,129"/>
+<area shape="rect" id="Node000003" href="$classConfigFileIsEmptyException.html" title="ConfigFileIsEmptyException позволяет диагностировать случаи с пустым конфигурационным файлом" alt="" coords="389,5,591,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="280,94,327,66,382,40,418,28,420,33,384,44,329,71,283,99"/>
+<area shape="rect" id="Node000004" href="$classConfigFileMissingException.html" title="ConfigFileMissingException позволяет диагностировать отсутствие конфигурационного файла" alt="" coords="390,55,590,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="326,99,427,77,428,83,327,104"/>
+<area shape="rect" id="Node000005" href="$classFilesSectionMissingException.html" title="FilesSectionMissingException позволяет диагностировать отстутствие секции files в конфигурационном фа..." alt="" coords="383,104,597,129"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="349,114,383,114,383,119,349,119"/>
+<area shape="rect" id="Node000006" href="$classIncorrectVersionException.html" title="IncorrectVersionException позволяет диагностировать некорректность указанной версии в конфигурационно..." alt="" coords="395,153,585,179"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="327,130,428,151,427,156,326,135"/>
+<area shape="rect" id="Node000007" href="$classNoMaxResponsesException.html" title="NoMaxResponsesException позволяет диагностировать остутствие max_reponses параметра в конфигурационно..." alt="" coords="389,203,591,228"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="283,135,329,163,384,189,420,200,418,205,382,194,327,167,280,139"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,104,120,129"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,114,168,114,168,119,134,119"/>
+</map>
