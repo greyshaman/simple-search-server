@@ -43,10 +43,6 @@ add_library(search-engine::SearchEngine ALIAS SearchEngine)
 
 # ## dependencies ## #
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -209,4 +205,9 @@ endif()
 
 if(SEARCH_ENGINE_BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+if(SEARCH_ENGINE_BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
+    doxygen_add_docs(docs include)
 endif()
