@@ -55,14 +55,14 @@ public:
    *
    * @param input_docs содержимое документов
    */
-  SEARCHENGINELIB_EXPORT void UpdateDocumentBase(const std::vector<std::string> input_docs);
+  SEARCHENGINE_EXPORT void UpdateDocumentBase(const std::vector<std::string> input_docs);
 
   /**
    * @brief GetWordCount Метод считает количество вхождений слова word в загруженной базе документов
    * @param word слово, частоту вхождений которого необходимо определить
    * @return возвращает подготовленный список с частотой указанного слова
    */
-  SEARCHENGINELIB_EXPORT std::vector<Entry> GetWordCount(const std::string& word) const;
+  SEARCHENGINE_EXPORT std::vector<Entry> GetWordCount(const std::string& word) const;
 };
 
 }

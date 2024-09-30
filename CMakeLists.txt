@@ -38,8 +38,8 @@ endif()
 set_if_undefined(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set_if_undefined(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
-add_library(SearchEngineLib) # init lib target below
-add_library(search-engine::SearchEngineLib ALIAS SearchEngineLib)
+add_library(SearchEngine) # init lib target below
+add_library(search-engine::SearchEngine ALIAS SearchEngine)
 
 # ## dependencies ## #
 
@@ -66,7 +66,7 @@ include_directories(include)
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(EXCEPTIONS_INCLUDE_DIR "${INCLUDE_DIR}/exceptions")
 
-generate_export_header(SearchEngineLib
+generate_export_header(SearchEngine
   EXPORT_FILE_NAME
   "${CMAKE_CURRENT_BINARY_DIR}/include/${export_file_name}")
 
@@ -101,6 +101,7 @@ set(sources
   src/exceptions/config-file-missing-exception.cpp
   src/exceptions/config-parser-exception.cpp
   src/exceptions/files-section-missing-exception.cpp
+  src/exceptions/incorrect-version-exception.cpp
   src/exceptions/no-max-responses-exception.cpp
 )
 
@@ -117,13 +118,13 @@ list(APPEND sources
 
 include(CMakePackageConfigHelpers)
 
-target_sources(SearchEngineLib PRIVATE ${sources})
-target_compile_definitions(SearchEngineLib
+target_sources(SearchEngine PRIVATE ${sources})
+target_compile_definitions(SearchEngine
   PUBLIC
     "$<$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>:SEARCH_ENGINE_STATIC_DEFINE>"
 )
 
-target_include_directories(SearchEngineLib
+target_include_directories(SearchEngine
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
@@ -132,7 +133,7 @@ target_include_directories(SearchEngineLib
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-set_target_properties(SearchEngineLib PROPERTIES
+set_target_properties(SearchEngine PROPERTIES
   PUBLIC_HEADER "${public_headers}"
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
@@ -149,11 +150,11 @@ if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     COMPATIBILITY SameMajorVersion
   )
 
-  install(TARGETS SearchEngineLib EXPORT SearchEngineLib_export
-    RUNTIME COMPONENT SearchEngineLib
-    LIBRARY COMPONENT SearchEngineLib NAMELINK_COMPONENT SearchEngineLib-dev
-    ARCHIVE COMPONENT SearchEngineLib-dev
-    PUBLIC_HEADER COMPONENT SearchEngineLib-dev
+  install(TARGETS SearchEngine EXPORT SearchEngine_export
+    RUNTIME COMPONENT SearchEngine
+    LIBRARY COMPONENT SearchEngine NAMELINK_COMPONENT SearchEngine-dev
+    ARCHIVE COMPONENT SearchEngine-dev
+    PUBLIC_HEADER COMPONENT SearchEngine-dev
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/search-engine"
   )
 
@@ -163,8 +164,8 @@ if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     set(targets_file "search-engine-static-targets.cmake")
   endif()
 
-  install(EXPORT SearchEngineLib_export
-    COMPONENT SearchEngineLib-dev
+  install(EXPORT SearchEngine_export
+    COMPONENT SearchEngine-dev
     FILE "${targets_file}"
     DESTINATION "${SEARCH_ENGINE_INSTALL_CMAKEDIR}"
     NAMESPACE search-engine::
@@ -173,7 +174,7 @@ if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
   install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/search-engine-config.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/search-engine-config-version.cmake"
-    COMPONENT SearchEngineLib-dev
+    COMPONENT SearchEngine-dev
     DESTINATION "${SEARCH_ENGINE_INSTALL_CMAKEDIR}"
   )
 
@@ -193,7 +194,7 @@ if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     endif()
 
     install(FILES "${pdb_file}"
-      COMPONENT SearchEngineLib-dev
+      COMPONENT SearchEngine-dev
       CONFIGURATIONS Debug RelWithDebInfo
       DESTINATION "${pdb_file_destination}"
       OPTIONAL)
@@ -201,7 +202,11 @@ if(SEARCH_ENGINE_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
 endif()
 
 
-# ToDo only for enabled tests
-# find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-# find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
-# add_subdirectory(tests)
+if(SEARCH_ENGINE_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
+if(SEARCH_ENGINE_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
