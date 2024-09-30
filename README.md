@@ -18,6 +18,7 @@
   - [Использование библиотеки в проектах](#использование-библиотеки-в-проектах)
     - [Как собранный пакет](#как-собранный-пакет)
     - [Как подпроект](#как-подпроект)
+  - [Api документация](#api-документация)
 
 ## Описание 
 
@@ -287,3 +288,7 @@ add_subdirectory(simple-search-server)
 include_directories(SYSTEM simple-search-server/include)
 
 ```
+
+### Api документация
+
+Краткую документацию по API библиотеки можно найти [здесь](https://github.com/greyshaman/simple-search-server/blob/master/docs/index.html)
