@@ -39,7 +39,6 @@ target_link_libraries(search-engine-demo PRIVATE search-engine::SearchEngine)
 #   -E copy_if_different ${data_files} "${CMAKE_CURRENT_BINARY_DIR}"
 # )
 file(COPY ${data_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-message("!!!!! check path: ${search-engine_SOURCE_DIR}")
 
 if(NOT is_top_level)
   win_copy_deps_to_target_dir(search-engine-demo search-engine::SearchEngine)
