@@ -1,40 +1,46 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(demo VERSION 0.1 LANGUAGES CXX)
+project(search-engine-demo VERSION 0.1 LANGUAGES CXX)
 
-# set(CMAKE_AUTOUIC ON)
-# set(CMAKE_AUTOMOC ON)
-# set(CMAKE_AUTORCC ON)
+include(../../cmake/utils.cmake)
+
+string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" is_top_level)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-# find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
+if(is_top_level)
+  find_package(SearchEngine REQUIRED)
+endif()
 
-set(JSON_PACKAGE_DIR "../../nlohmann_json")
-add_subdirectory(${JSON_PACKAGE_DIR})
-include_directories(SYSTEM ${JSON_PACKAGE_DIR}/include)
+set(sources main.cpp)
 
-include_directories(../../include)
-set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-add_subdirectory(src)
-add_subdirectory(tests)
-
-set(DEMO_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/demo)
-list(DEMO_FILES APPEND
-  ${DEMO_FILES_DIR}/config.json
-  ${DEMO_FILES_DIR}/requests.json
-  ${DEMO_FILES_DIR}/file001.txt
-  ${DEMO_FILES_DIR}/file002.txt
-  ${DEMO_FILES_DIR}/file003.txt
-  ${DEMO_FILES_DIR}/file004.txt
+set(data_files
+  config.json
+  requests.json
+  file001.txt
+  file002.txt
+  file003.txt
+  file004.txt
 )
 
-include(GNUInstallDirs)
-install(TARGETS search-server
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+list(APPEND project_files
+  ${sources}
+  ${data_files}
 )
 
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES "${project_files}")
+
+add_executable(search-engine-demo)
+target_sources(search-engine-demo PRIVATE ${sources})
+target_link_libraries(search-engine-demo PRIVATE search-engine::SearchEngine)
+
+# execute_process(COMMAND ${CMAKE_COMMAND}
+#   -E copy_if_different ${data_files} "${CMAKE_CURRENT_BINARY_DIR}"
+# )
+file(COPY ${data_files} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+message("!!!!! check path: ${search-engine_SOURCE_DIR}")
+
+if(NOT is_top_level)
+  win_copy_deps_to_target_dir(search-engine-demo search-engine::SearchEngine)
+endif()

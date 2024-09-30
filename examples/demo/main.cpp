@@ -1,6 +1,4 @@
 #include <iostream>
-#include <string>
-#include <QCoreApplication>
 #include <exception>
 
 #include "converterjson.h"
