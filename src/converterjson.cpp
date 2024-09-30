@@ -173,7 +173,6 @@ void ConverterJSON::PutAnswers(const std::vector<std::vector<std::pair<int, floa
   std::ofstream file(answers_filename, std::ios::out | std::ios::trunc);
 
   if (file.is_open()) {
-    // TODO remove setw(4)
     file << std::setw(4) << json_answers;
   }
 }
